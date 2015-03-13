@@ -12,9 +12,7 @@ import edu.ccsu.networking.RDT10Sender;
  * this demo also shows one way to break a larger message up this way.
  *
  * @author Chad Williams
- * Editied by Luke
  *
- * Reads from file.txt than passes the bytes to rdtSend
  */
 public class Main {
     public static void main(String[] args) {
