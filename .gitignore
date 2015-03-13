@@ -3,6 +3,11 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
+# Luke's IDE Project Files
+out/
+.idea/
+FinalProject.iml
+
 # Package Files #
 *.jar
 *.war
