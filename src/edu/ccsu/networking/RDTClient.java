@@ -1,6 +1,6 @@
 package edu.ccsu.networking;
 
-import edu.ccsu.util.HTTP;
+import edu.ccsu.util.HttpUtil;
 import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
@@ -47,7 +47,7 @@ public class RDTClient {
 
             byte[] builtPacket = Arrays.copyOf(packet.getData(), packet.getLength());
 
-            String[] packetInfo = HTTP.parseHeader(builtPacket);
+            String[] packetInfo = HttpUtil.parseHeader(builtPacket);
             currentSeq = Integer.parseInt(packetInfo[1]);
 
 
@@ -57,14 +57,14 @@ public class RDTClient {
                 if(slowMode)
                     System.out.println("Already got this packet, discarding...");
 
-                ackPacket = HTTP.createACK(previousSeq);
+                ackPacket = HttpUtil.createACK(previousSeq);
             } else {
-                ackPacket = HTTP.createACK(currentSeq);
+                ackPacket = HttpUtil.createACK(currentSeq);
                 if(slowMode)
                     System.out.println("Received correct packet, delivering...");
 
                 previousSeq = currentSeq;
-                byte[] packetData = HTTP.getData(builtPacket);
+                byte[] packetData = HttpUtil.getData(builtPacket);
                 deliverData(packetData);
             }
 

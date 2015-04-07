@@ -8,7 +8,7 @@
  * But for the final project i don't think we have to worry about compatibilities like that...
  */
 
-import edu.ccsu.util.HTTP;
+import edu.ccsu.util.HttpUtil;
 
 public class HTTPDemo {
     public static void main(String[] args) {
@@ -20,13 +20,13 @@ public class HTTPDemo {
         //String[][] fields = {{"Content-Type", "audio/mpeg"}, {"Date", "Tue, 15 Nov 1994 08:12:31 GMT"}};
 
         // create byte[] of header
-        byte[] header = HTTP.createHeader("POST", "0");
+        byte[] header = HttpUtil.createHeader("POST", "0");
 
         // data (should be split up)
         byte[] data = new String("This is a sample message.  Hopefully the packets all arrive and you are able to read this nice and easy.  Today I had eggs and bacon for breakfast it was delicious.  I like to drink my coffee with two cremes and two sugars.  Sometimes I \n").getBytes();
 
         // For demo just pack all data into 1 packet
-        byte[] packet = HTTP.buildPacket(header, data);
+        byte[] packet = HttpUtil.buildPacket(header, data);
 
         // Send data out here
         System.out.println("Sending packet:");
@@ -38,7 +38,7 @@ public class HTTPDemo {
         // packet is received and converted to byte[]
 
         // read packet header
-        String[] packetInfo = HTTP.parseHeader(packet);
+        String[] packetInfo = HttpUtil.parseHeader(packet);
 
         // packetInfo[0] = POST
         // packetInfo[1] = /user/give/ByeByeBye-NSYNC.mp4
@@ -48,7 +48,7 @@ public class HTTPDemo {
             System.out.println(packetInfo[i]);
 
         // now parse fields if needed
-        String[][] allFields = HTTP.parseFields(packetInfo[2]);
+        String[][] allFields = HttpUtil.parseFields(packetInfo[2]);
 
         System.out.println("\n\n\n");
 
@@ -59,7 +59,7 @@ public class HTTPDemo {
         // Get data and deliver
         System.out.println("\n\n\n");
         System.out.println("Get data:");
-        byte[] packetData = HTTP.getData(packet);
+        byte[] packetData = HttpUtil.getData(packet);
 
         System.out.println(new String(packetData));
 

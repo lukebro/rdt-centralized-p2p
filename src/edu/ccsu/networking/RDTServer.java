@@ -1,6 +1,6 @@
 package edu.ccsu.networking;
 
-import edu.ccsu.util.HTTP;
+import edu.ccsu.util.HttpUtil;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.*;
@@ -44,7 +44,7 @@ public class RDTServer {
         while(byteStream.available() > 0) {
 
             waiting = true;
-            byte[] packetHeader = HTTP.createHeader("POST", String.valueOf(seq));
+            byte[] packetHeader = HttpUtil.createHeader("POST", String.valueOf(seq));
             byte[] packetData = new byte[packetSize - packetHeader.length];
 
             int bytesRead = byteStream.read(packetData);
@@ -53,7 +53,7 @@ public class RDTServer {
                 packetData = Arrays.copyOf(packetData, bytesRead);
             }
 
-            byte[] builtPacket = HTTP.buildPacket(packetHeader, packetData);
+            byte[] builtPacket = HttpUtil.buildPacket(packetHeader, packetData);
 
             if(slowMode) {
                 System.out.println("Server sending packet #" + packetNumber + " of size " + builtPacket.length + " in 5 seconds");
@@ -78,8 +78,8 @@ public class RDTServer {
 
                     byte[] receivingPacket = Arrays.copyOf(getACK.getData(), getACK.getLength());
 
-                    if(HTTP.isACK(receivingPacket)) {
-                        int getSeq = HTTP.getSeq(receivingPacket);
+                    if(HttpUtil.isACK(receivingPacket)) {
+                        int getSeq = HttpUtil.getSeq(receivingPacket);
 
                         if(getSeq != seq) {
                             System.out.println("Received ACK with seq #" + getSeq + ", wrong seq number.");

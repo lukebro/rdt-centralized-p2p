@@ -3,9 +3,9 @@ package edu.ccsu.util;
 /**
  * Created by Lukasz Brodowski
  */
-public class HTTP {
+public class HttpUtil {
 
-    private HTTP(){ }
+    private HttpUtil(){ }
 
 
     /*
