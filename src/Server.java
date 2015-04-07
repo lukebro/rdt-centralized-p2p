@@ -9,6 +9,7 @@ public class Server {
 
         boolean slowMode = false;
 
+        // Parse argument, and set Slow Mode to true if -slow is passed
         if(args.length > 0 && args[0].equals("-slow")) {
             System.out.println("Server starting in slow mode...");
             slowMode = true;
@@ -24,6 +25,11 @@ public class Server {
         server.rdtSend(data);
     }
 
+    /*
+     * Read bytes from a file
+     * @param Path to file
+     * @return byte[] of file
+     */
     private static byte[] readFromFile(String path) throws IOException {
 
         File file = new File(path);
