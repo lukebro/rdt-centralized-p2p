@@ -58,8 +58,9 @@ public class HTTP {
         else
             header = method + " " + param + " HTTP/1.0\r\n";
 
-        for(int i = 0; i < fields.length; i++)
-            header += fields[i][0] + ": " + fields[i][1] + "\r\n";
+        if(fields != null)
+            for(int i = 0; i < fields.length; i++)
+                header += fields[i][0] + ": " + fields[i][1] + "\r\n";
 
         header += "\r\n";
 
@@ -84,11 +85,12 @@ public class HTTP {
         String[] r = new String[3];
         String[] firstLine = line[0].split(" ");
         r[0] = firstLine[0];
-        r[1] = (firstLine[1].compareTo("HTTP/1.0") > 0)? null : firstLine[1];
+        r[1] = (firstLine[1].equals("HTTP/1.0"))? null : firstLine[1];
         r[2] = "";
 
-        for(int i = 1; i < line.length; i++)
-            r[2] += line[i] + "\r\n";
+        if(line.length > 1)
+            for(int i = 1; i < line.length; i++)
+                r[2] += line[i] + "\r\n";
 
         return r;
     }
