@@ -1,6 +1,7 @@
 import edu.ccsu.networking.RDTClient;
 
 import java.io.IOException;
+import java.net.InetAddress;
 
 public class Client {
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -8,17 +9,20 @@ public class Client {
 
         boolean slowMode = false;
 
-        if(args.length > 0 && args[0].equals("-slow")) {
+        if(args.length > 1 && args[1].equals("-slow")) {
             System.out.println("Client starting in slow mode...");
             slowMode = true;
         } else {
             System.out.println("Client starting...");
         }
 
-        byte[] targetAdddress = {127,0,0,1};
-        RDTClient client = new RDTClient(targetAdddress, 3500, 3600, slowMode);
+        // Address of server
+        InetAddress targetAddress = InetAddress.getByName(args[0]);
 
-        client.rdtReceive();
+        RDTClient client = new RDTClient(targetAddress, slowMode);
+
+
+        client.rdtRequest("data.txt");
 
     }
 }

@@ -15,7 +15,7 @@ public class HttpUtil {
      */
     public static byte[] createACK(int seq) {
         byte ack = (seq == 0)? (byte)'0' : (byte)'1';
-        byte[] packet = {'A', 'C', 'K', ' ', ack, ' ', 'H', 'T', 'T', 'P', '/', '1', '.', '0', '\r', '\n', '\r', '\n'};
+        byte[] packet = {'A', 'C', 'K', ' ', ack, ' ', 'H', 'T', 'T', 'P', '/', '1', '.', '1', '\r', '\n', '\r', '\n'};
         return packet;
     }
 
@@ -54,9 +54,9 @@ public class HttpUtil {
     public static byte[] createHeader(String method, String param, String[][] fields) {
         String header;
         if(param == null)
-            header = method + " HTTP/1.0\r\n";
+            header = method + " HTTP/1.1\r\n";
         else
-            header = method + " " + param + " HTTP/1.0\r\n";
+            header = method + " " + param + " HTTP/1.1\r\n";
 
         if(fields != null)
             for(int i = 0; i < fields.length; i++)
@@ -85,7 +85,7 @@ public class HttpUtil {
         String[] r = new String[3];
         String[] firstLine = line[0].split(" ");
         r[0] = firstLine[0];
-        r[1] = (firstLine[1].equals("HTTP/1.0"))? null : firstLine[1];
+        r[1] = (firstLine[1].equals("HTTP/1.1"))? null : firstLine[1];
         r[2] = "";
 
         if(line.length > 1)

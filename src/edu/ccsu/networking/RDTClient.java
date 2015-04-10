@@ -7,54 +7,72 @@ import java.util.Arrays;
 
 
 public class RDTClient {
-    private int receiverPortNumber = 0;
-    private int sendingPortNumber = 0;
+    private int serverPortNumber = 5926;
+    private int clientPortNumber = 3141;
     private DatagramSocket socket = null;
     private InetAddress internetAddress = null;
     private boolean slowMode = false;
-    private int packetSize = 512;
-    private byte[] data;
+    private int packetSize = 128;
+    private byte[] data = null;
 
-    /*
+    /**
      * Set up a client used for RDT
      * assign all private variables to the values passed
+     *
+     * @param targetAddress Address of the server
+     * @param slowMode boolean to enable/disable slow mode
      */
-    public RDTClient(byte[] targetAddress, int receiverPortNumber, int sendingPortNumber, boolean slowMode) throws SocketException, UnknownHostException {
-        internetAddress = InetAddress.getByAddress(targetAddress);
-        this.receiverPortNumber = receiverPortNumber;
-        this.sendingPortNumber = sendingPortNumber;
+    public RDTClient(InetAddress targetAddress, boolean slowMode) throws SocketException, UnknownHostException {
+        this.internetAddress = targetAddress;
         this.slowMode = slowMode;
 
-        socket = new DatagramSocket(this.sendingPortNumber);
+        socket = new DatagramSocket(this.clientPortNumber);
     }
 
-    /*
+    /**
      * Closes socket
      */
-    public void closeSocket(){
+    private void closeSocket(){
         if (socket!=null){
             socket.close();
         }
     }
 
-    /*
+    public void rdtRequest(String file) throws IOException, InterruptedException {
+
+        // Create a request for the file, assume it's going to get there
+        byte[] request = HttpUtil.createHeader("REQUEST", file);
+
+        DatagramPacket requestPacket = new DatagramPacket(request, request.length, this.internetAddress, this.serverPortNumber);
+
+        System.out.println("Sending request and hoping it gets there...");
+        socket.send(requestPacket);
+
+        System.out.println("Starting to wait for data from server.");
+        rdtReceive();
+        System.out.println("Combining all packets and delivering data:");
+        buildFile();
+    }
+
+    /**
      * Sits in wait state till it receives a packet.
      * Once a packet is received ACK's back according with the seq number provided in the packet received
      * Discards any packets with wrong seq number
      */
-    public void rdtReceive() throws IOException, InterruptedException {
+    private void rdtReceive() throws IOException, InterruptedException {
 
+        boolean waiting = true;
         int previousSeq = 1;
-        int currentSeq = 0;
+        int currentSeq;
 
-        while(true) {
+        while(waiting) {
 
             // Create new packet for receiving data
             byte[] data = new byte[packetSize];
             DatagramPacket packet = new DatagramPacket(data, data.length);
 
             if(slowMode)
-                System.out.println("Waiting for packet...");
+                System.out.println("Waiting for packet.");
 
             // wait to receive packet
             socket.receive(packet);
@@ -75,24 +93,32 @@ public class RDTClient {
             // In both conditions an ACK packet is created
             if(currentSeq == previousSeq) {
                 if(slowMode)
-                    System.out.println("Already got this packet, discarding...");
+                    System.out.println("Already got this packet, discarding.");
 
                 ackPacket = HttpUtil.createACK(previousSeq);
             } else {
                 ackPacket = HttpUtil.createACK(currentSeq);
                 if(slowMode)
-                    System.out.println("Received correct packet, delivering...");
+                    System.out.println("Received correct packet, saving.");
 
                 previousSeq = currentSeq;
                 byte[] packetData = HttpUtil.getData(builtPacket);
-                deliverData(packetData);
+
+                addData(packetData);
+
+                String[][] packetField = HttpUtil.parseFields(packetInfo[2]);
+
+                // If dFlag is set to 1 this is last packet
+                if(packetField[0][0].equals("dFlag") && Integer.parseInt(packetField[0][1]) == 1) {
+                    waiting = false;
+                }
             }
 
             // create DatagramPacket from byte[] ACK
-            DatagramPacket ack = new DatagramPacket(ackPacket, ackPacket.length, internetAddress, receiverPortNumber);
+            DatagramPacket ack = new DatagramPacket(ackPacket, ackPacket.length, internetAddress, serverPortNumber);
 
             if(slowMode) {
-                System.out.println("Sending ACK back in 5 seconds");
+                System.out.println("Sending ACK back in 5 seconds.");
                 Thread.sleep(5000);
             }
 
@@ -105,11 +131,30 @@ public class RDTClient {
         }
     }
 
-    /*
-     * Print out packet data
-     * @param byte[] packet
+    /**
+     * Data collecter so we can build the file on finish
+     *
+     * @param addedData data from packet
      */
-    private void deliverData(byte[] packet) {
-        System.out.println(new String(packet));
+    private void addData(byte[] addedData) {
+        if(this.data == null) {
+            this.data = addedData;
+        } else {
+            byte[] newData = new byte[this.data.length + addedData.length];
+
+            System.arraycopy(this.data, 0, newData, 0, this.data.length);
+            System.arraycopy(addedData, 0, newData, this.data.length, addedData.length);
+
+            this.data = newData;
+        }
+    }
+
+    /**
+     * Print out all data collected from packets
+     */
+    private void buildFile() {
+        System.out.println(new String(this.data));
+
+        this.data = null;
     }
 }

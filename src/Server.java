@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class Server {
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws InterruptedException, IOException {
 
         boolean slowMode = false;
 
@@ -17,12 +17,22 @@ public class Server {
             System.out.println("Server starting...");
         }
 
-        byte[] targetAdddress = {127,0,0,1};
-        RDTServer server = new RDTServer(targetAdddress, 3600, 3500, slowMode);
 
+        RDTServer server = new RDTServer(slowMode);
+
+        System.out.println("Reading data from data.txt.");
         byte[] data = readFromFile("data.txt");
 
-        server.rdtSend(data);
+        // Save data we read from data.txt into our object
+        server.saveData(data);
+
+        // Start server in infinite loop
+        while(true) {
+
+            server.waitFromBelow();
+
+            System.out.println("Request finished sending, back to waiting form below.");
+        }
     }
 
     /*
