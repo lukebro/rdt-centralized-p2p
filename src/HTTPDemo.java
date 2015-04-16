@@ -17,10 +17,10 @@ public class HTTPDemo {
         /* --------- Sender ---------- */
 
         // settings fields in String[][] array
-        //String[][] fields = {{"Content-Type", "audio/mpeg"}, {"Date", "Tue, 15 Nov 1994 08:12:31 GMT"}};
+        String[][] fields = {{"Content-Type", "audio/mpeg"}, {"Date", "Tue, 15 Nov 1994 08:12:31 GMT"}};
 
         // create byte[] of header
-        byte[] header = HttpUtil.createHeader("POST", "0");
+        byte[] header = HttpUtil.createHeader("POST", "0", fields);
 
         // data (should be split up)
         byte[] data = new String("This is a sample message.  Hopefully the packets all arrive and you are able to read this nice and easy.  Today I had eggs and bacon for breakfast it was delicious.  I like to drink my coffee with two cremes and two sugars.  Sometimes I \n").getBytes();
@@ -49,6 +49,7 @@ public class HTTPDemo {
 
         // now parse fields if needed
         String[][] allFields = HttpUtil.parseFields(packetInfo[2]);
+
 
         System.out.println("\n\n\n");
 

@@ -24,5 +24,12 @@ public class Client {
 
         client.rdtRequest("data.txt");
 
+
+
+        /*
+
+
+
+         */
     }
 }
