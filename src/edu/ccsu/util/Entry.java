@@ -1,3 +1,4 @@
+package edu.ccsu.util;
 
 public class Entry {
 	

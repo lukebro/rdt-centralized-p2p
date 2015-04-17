@@ -1,3 +1,4 @@
+package edu.ccsu.networking;
 
 import java.io.*;
 import java.net.*;
@@ -5,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+import edu.ccsu.util.Entry;
 import edu.ccsu.util.HttpUtil;
 
 //import Entry;

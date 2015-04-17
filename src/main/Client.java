@@ -1,3 +1,4 @@
+package main;
 import edu.ccsu.networking.RDTClient;
 
 import java.io.IOException;

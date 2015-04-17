@@ -1,3 +1,6 @@
+package main;
+import gui.PeerPanel;
+
 import javax.swing.JFrame;
 public class PeerFrame {
 

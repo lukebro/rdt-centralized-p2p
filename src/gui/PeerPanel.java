@@ -1,7 +1,9 @@
+package gui;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
 
+import edu.ccsu.networking.Peer;
 import edu.ccsu.networking.RDTClient;
 
 import java.awt.*;
@@ -81,7 +83,6 @@ public class PeerPanel extends JPanel {
 
 		remoteModel.addColumn("Name");
 		remoteModel.addColumn("Size");
-		remoteModel.addColumn("Peer");
 		remoteScroll = new JScrollPane(remoteTable);
 		remoteTable.setPreferredScrollableViewportSize(new Dimension(250, 70));
 		remoteTable.setFillsViewportHeight(true);
@@ -119,7 +120,7 @@ public class PeerPanel extends JPanel {
 
 		activity = new JTextArea("System Ready",5,20);
 		activityScroll = new JScrollPane(activity);
-//remoteModel.
+
 		add (activityScroll, BorderLayout.SOUTH);
 	}
 

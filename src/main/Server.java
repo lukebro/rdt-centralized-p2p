@@ -1,3 +1,4 @@
+package main;
 import edu.ccsu.networking.RDTServer;
 
 import java.io.FileInputStream;

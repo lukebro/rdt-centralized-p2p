@@ -1,3 +1,6 @@
+package main;
+import gui.ServerPanel;
+
 import javax.swing.JFrame;
 public class ServerFrame {
 
