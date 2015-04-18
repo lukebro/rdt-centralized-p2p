@@ -1,4 +1,8 @@
+package edu.ccsu.main;
+
+import edu.ccsu.gui.PeerPanel;
 import javax.swing.JFrame;
+
 public class PeerFrame {
 
 	public static void main(String[] args) {

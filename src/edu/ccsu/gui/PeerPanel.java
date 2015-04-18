@@ -1,22 +1,18 @@
+package edu.ccsu.gui;
+
 import javax.swing.*;
-import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
-
-import edu.ccsu.networking.RDTClient;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.net.InetAddress;
+import edu.ccsu.networking.RDTClient;
+import edu.ccsu.networking.Peer;
 
 public class PeerPanel extends JPanel {
 
@@ -115,12 +111,12 @@ public class PeerPanel extends JPanel {
 		centerGrid.add(remoteBorder);
 		centerGrid.add(localBox);
 
-		add (centerGrid, BorderLayout.CENTER);
+		add(centerGrid, BorderLayout.CENTER);
 
 		activity = new JTextArea("System Ready",5,20);
 		activityScroll = new JScrollPane(activity);
-//remoteModel.
-		add (activityScroll, BorderLayout.SOUTH);
+
+		add(activityScroll, BorderLayout.SOUTH);
 	}
 
 	private class ModeListener implements ActionListener {
@@ -172,8 +168,7 @@ public class PeerPanel extends JPanel {
 				RDTClient client = new RDTClient(targetAddress, slowMode);
 
 				client.rdtRequest("data.txt");
-			} catch (IOException | InterruptedException e1) {
-				// TODO Auto-generated catch block
+			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
 		}
@@ -199,7 +194,6 @@ public class PeerPanel extends JPanel {
 			try {
 				peer.makeRequest(peer.getRemoteFiles(rows));
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		}

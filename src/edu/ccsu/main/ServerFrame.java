@@ -1,4 +1,8 @@
+package edu.ccsu.main;
+
+import edu.ccsu.gui.ServerPanel;
 import javax.swing.JFrame;
+
 public class ServerFrame {
 
 	public static void main (String[] args) {

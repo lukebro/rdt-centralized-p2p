@@ -1,3 +1,4 @@
+package edu.ccsu.networking;
 
 import java.io.*;
 import java.net.*;
@@ -6,9 +7,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import edu.ccsu.util.HttpUtil;
-
-//import Entry;
-//import HttpUtil;
+import edu.ccsu.structures.Entry;
 
 public class Peer {
 

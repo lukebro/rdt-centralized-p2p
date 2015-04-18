@@ -1,3 +1,5 @@
+package edu.ccsu.sample;
+
 /**
  * Created by Lukasz Brodowski
  * Example of how HTTP utility class works.
