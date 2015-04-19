@@ -1,4 +1,4 @@
-package edu.ccsu.util;
+package edu.ccsu.structures;
 
 public class Entry {
 	

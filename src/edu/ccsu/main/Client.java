@@ -1,6 +1,6 @@
-package main;
-import edu.ccsu.networking.RDTClient;
+package edu.ccsu.main;
 
+import edu.ccsu.networking.RDTClient;
 import java.io.IOException;
 import java.net.InetAddress;
 
@@ -25,5 +25,12 @@ public class Client {
 
         client.rdtRequest("data.txt");
 
+
+
+        /*
+
+
+
+         */
     }
 }

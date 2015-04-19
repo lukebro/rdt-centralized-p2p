@@ -8,9 +8,7 @@ import java.util.ArrayList;
 
 import edu.ccsu.util.Entry;
 import edu.ccsu.util.HttpUtil;
-
-//import Entry;
-//import HttpUtil;
+import edu.ccsu.structures.Entry;
 
 public class Peer {
 

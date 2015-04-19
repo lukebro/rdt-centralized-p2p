@@ -1,6 +1,6 @@
-package main;
-import edu.ccsu.networking.RDTServer;
+package edu.ccsu.main;
 
+import edu.ccsu.networking.RDTServer;
 import java.io.FileInputStream;
 import java.io.File;
 import java.io.IOException;

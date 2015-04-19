@@ -1,18 +1,13 @@
-package gui;
+package edu.ccsu.gui;
+
 import javax.swing.*;
-import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
-
-import edu.ccsu.networking.RDTServer;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.io.FileInputStream;
 import java.io.File;
-import java.io.IOException;
+import edu.ccsu.networking.RDTServer;
 
 
 public class ServerPanel extends JPanel {
@@ -123,7 +118,7 @@ public class ServerPanel extends JPanel {
 					
 					activity.append("\nRequest finished sending, back to waiting form below.");
 				}
-			} catch (IOException | InterruptedException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
