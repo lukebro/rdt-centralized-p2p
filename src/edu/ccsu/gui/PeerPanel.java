@@ -2,6 +2,7 @@ package edu.ccsu.gui;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedReader;
@@ -11,6 +12,9 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+import edu.ccsu.main.PeerFrame;
 import edu.ccsu.networking.RDTClient;
 import edu.ccsu.networking.Peer;
 
@@ -35,7 +39,7 @@ public class PeerPanel extends JPanel {
 	private Peer peer;
 
 	public PeerPanel() {
-		
+
 		peer = new Peer();
 
 		setLayout (new BorderLayout());
@@ -77,10 +81,10 @@ public class PeerPanel extends JPanel {
 
 		remoteModel.addColumn("Name");
 		remoteModel.addColumn("Size");
-		remoteModel.addColumn("Peer");
 		remoteScroll = new JScrollPane(remoteTable);
 		remoteTable.setPreferredScrollableViewportSize(new Dimension(250, 70));
 		remoteTable.setFillsViewportHeight(true);
+		remoteTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		remoteBorder = new JPanel();
 		remoteBorder.setLayout(new BorderLayout());
@@ -119,6 +123,7 @@ public class PeerPanel extends JPanel {
 		add(activityScroll, BorderLayout.SOUTH);
 	}
 
+
 	private class ModeListener implements ActionListener {
 
 		public void actionPerformed (ActionEvent event)
@@ -147,10 +152,12 @@ public class PeerPanel extends JPanel {
 				for(File file : myFiles){
 					if(file.getName().endsWith(".mp3")){
 						localModel.addRow(new Object[]{file.getName(),file.getTotalSpace()});
-						peer.addFile(file.getName(),file.getTotalSpace());
+						try {
+							peer.addFile(file.getName(),file.getTotalSpace());
+						} catch (UnknownHostException e1) {e1.printStackTrace();}
 					}
 				}
-			}else{}
+			} else {}
 		}
 	}
 
@@ -168,9 +175,7 @@ public class PeerPanel extends JPanel {
 				RDTClient client = new RDTClient(targetAddress, slowMode);
 
 				client.rdtRequest("data.txt");
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
+			} catch (Exception e1) {e1.printStackTrace();}
 		}
 	}
 	
@@ -181,21 +186,17 @@ public class PeerPanel extends JPanel {
 				try {
 					requestSocket = new ServerSocket(6789).accept();
 					peer.takeRequest(requestSocket.getInetAddress(),requestSocket.getPort(),new BufferedReader(new InputStreamReader(requestSocket.getInputStream())).readLine());
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+				} catch (IOException e1) {e1.printStackTrace();}
 			}
 		}
 	}
 	
 	private class SelectionListener implements ActionListener {
 		public void actionPerformed(ActionEvent e){
-			int[] rows = remoteTable.getSelectedRows();
+			int row = remoteTable.getSelectedRows()[0];
 			try {
-				peer.makeRequest(peer.getRemoteFiles(rows));
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
+				peer.makeRequest(peer.getRemoteFiles(row));
+			} catch (IOException e1) {e1.printStackTrace();}
 		}
 	}
 }
