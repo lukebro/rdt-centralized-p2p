@@ -1,6 +1,7 @@
 package edu.ccsu.networking;
 
 import edu.ccsu.util.HttpUtil;
+
 import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
@@ -27,7 +28,9 @@ public class RDTClient {
         this.slowMode = slowMode;
 
         socket = new DatagramSocket(this.clientPortNumber);
+        
     }
+    
 
     /**
      * Closes socket

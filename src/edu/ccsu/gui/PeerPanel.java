@@ -39,7 +39,7 @@ public class PeerPanel extends JPanel {
 	private Peer peer;
 
 	public PeerPanel() {
-
+	
 		peer = new Peer();
 
 		setLayout (new BorderLayout());
@@ -51,9 +51,9 @@ public class PeerPanel extends JPanel {
 		
 		networkJoinLeave = new JButton("Join/Leave Network");
 		ServerListener srvrListnr = new ServerListener();
-		PeerListener peerListnr = new PeerListener();
+		//PeerListener peerListnr = new PeerListener();
 		networkJoinLeave.addActionListener(srvrListnr);
-		networkJoinLeave.addActionListener(peerListnr);
+		//networkJoinLeave.addActionListener(peerListnr);
 		
 		normal = new JRadioButton("Normal", true);
 		slow = new JRadioButton("Slow");
@@ -122,6 +122,10 @@ public class PeerPanel extends JPanel {
 
 		add(activityScroll, BorderLayout.SOUTH);
 	}
+	
+	public void getMessage(String message){
+		activity.append(message);
+	}
 
 
 	private class ModeListener implements ActionListener {
@@ -161,13 +165,21 @@ public class PeerPanel extends JPanel {
 		}
 	}
 
-	private class ServerListener implements ActionListener {
+	private class ServerListener extends SwingWorker<Void,Void>implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			if(slowMode = true) {
-				activity.append("\nClient starting in slow mode...");
-			} else {
-				activity.append("\nClient starting...");
+			System.out.println(javax.swing.SwingUtilities.isEventDispatchThread());
+					if(slowMode = true) {
+						activity.append("\nClient starting in slow mode...");
+					} else {
+						activity.append("\nClient starting...");
+					}
+				try {
+					doInBackground();
+				} catch (Exception e1) {e1.printStackTrace();}
 			}
+
+		@Override
+		protected Void doInBackground() throws Exception {
 			try {
 				// Address of server
 				InetAddress targetAddress = InetAddress.getByName("127.0.0.1");
@@ -176,18 +188,25 @@ public class PeerPanel extends JPanel {
 
 				client.rdtRequest("data.txt");
 			} catch (Exception e1) {e1.printStackTrace();}
+			return null;
+		};
 		}
-	}
+
 	
 	private class PeerListener implements ActionListener {
 		public void actionPerformed(ActionEvent e){
-			while(true) {
-				Socket requestSocket;
-				try {
-					requestSocket = new ServerSocket(6789).accept();
-					peer.takeRequest(requestSocket.getInetAddress(),requestSocket.getPort(),new BufferedReader(new InputStreamReader(requestSocket.getInputStream())).readLine());
-				} catch (IOException e1) {e1.printStackTrace();}
-			}
+			System.out.println(javax.swing.SwingUtilities.isEventDispatchThread());
+			SwingWorker worker = new SwingWorker<Void,Void>() {
+				public Void doInBackground(){
+					while(true) {
+						Socket requestSocket;
+						try {
+							requestSocket = new ServerSocket(6789).accept();
+							peer.takeRequest(requestSocket.getInetAddress(),requestSocket.getPort(),new BufferedReader(new InputStreamReader(requestSocket.getInputStream())).readLine());
+						} catch (IOException e1) {e1.printStackTrace();}
+					}
+				}
+			};
 		}
 	}
 	

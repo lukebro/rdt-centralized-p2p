@@ -20,10 +20,10 @@ public class Client {
         // Address of server
         InetAddress targetAddress = InetAddress.getByName(args[0]);
 
-        RDTClient client = new RDTClient(targetAddress, slowMode);
+        //RDTClient client = new RDTClient(targetAddress, slowMode);
 
 
-        client.rdtRequest("data.txt");
+      //  client.rdtRequest("data.txt");
 
 
 

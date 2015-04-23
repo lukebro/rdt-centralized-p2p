@@ -90,6 +90,7 @@ public class ServerPanel extends JPanel {
 				slowMode = true;
 		}
 	}
+	
 
 	private class NetworkListener implements ActionListener {
 
@@ -102,28 +103,28 @@ public class ServerPanel extends JPanel {
 				activity.append("\nServer starting...");
 			}
 
-			try {
-				RDTServer server = new RDTServer(slowMode);
 
-				activity.append("\nReading data from data.txt.");
-				byte[] data = readFromFile("data.txt");
+					try {
+						RDTServer server = new RDTServer(slowMode);
 
-				// Save data we read from data.txt into our object
-				server.saveData(data);
+						activity.append("\nReading data from data.txt.");
+						byte[] data = readFromFile("data.txt");
 
-				// Start server in infinite loop
-				while(true) {
+						// Save data we read from data.txt into our object
+						server.saveData(data);
 
-					server.waitFromBelow();
-					
-					activity.append("\nRequest finished sending, back to waiting form below.");
-				}
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+						// Start server in infinite loop
+						while(true) {
+
+							server.waitFromBelow();
+
+							activity.append("\nRequest finished sending, back to waiting form below.");
+						}
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 			}
-
-		}
 	}
 }
 

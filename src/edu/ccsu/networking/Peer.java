@@ -9,14 +9,18 @@ import java.util.ArrayList;
 import edu.ccsu.structures.Entry;
 import edu.ccsu.util.HttpUtil;
 
-public class Peer {
+public class Peer implements Runnable {
 
 	private String shareFolder;
 	private ArrayList<Entry> fileList = new ArrayList<Entry>();
 	private ArrayList<Entry> remoteFiles = new ArrayList<Entry>();
 
 	public Peer() {
-		// TODO Auto-generated constructor stub
+		run();
+	}
+	
+	public void run() {
+		
 	}
 	
 	public void takeRequest(InetAddress ip, int port, String request) throws IOException{
