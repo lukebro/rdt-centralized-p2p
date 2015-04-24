@@ -184,7 +184,10 @@ public class PeerPanel extends JPanel {
 				targetAddress = InetAddress.getByName("127.0.0.1");
 				RDTClient client = new RDTClient(targetAddress, slowMode);
 				client.rdtRequest("data.txt");
-			} catch (IOException | InterruptedException e1) {e1.printStackTrace();}
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+
 		}
 	}
 

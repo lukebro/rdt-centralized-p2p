@@ -1,6 +1,9 @@
 package edu.ccsu.networking;
 
+import edu.ccsu.gui.ServerPanel;
 import edu.ccsu.util.HttpUtil;
+
+import javax.swing.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.*;
@@ -8,11 +11,12 @@ import java.util.Arrays;
 
 
 public class RDTServer {
+
     private int sendingPortNumber = 5926;
     private DatagramSocket socket = null;
     private int packetSize = 128;
     private boolean slowMode = false;
-    private byte[] savedData;
+    public byte[] savedData;
 
     /**
      * Methods of our HTTP protocol
@@ -33,6 +37,7 @@ public class RDTServer {
     public RDTServer(boolean slowMode) throws SocketException, UnknownHostException {
         this.sendingPortNumber = 5926;
         this.slowMode = slowMode;
+
 
         socket = new DatagramSocket(this.sendingPortNumber);
     }
@@ -217,6 +222,23 @@ public class RDTServer {
 
         }
 
+    }
+
+    public void run() {
+        while(true) {
+
+            try {
+
+                this.waitFromBelow();
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+            }
+
+            System.out.println("Request finished sending, back to waiting form below.");
+        }
     }
 
 }
