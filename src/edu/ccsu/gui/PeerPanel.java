@@ -37,10 +37,12 @@ public class PeerPanel extends JPanel {
 	final JFileChooser fileChooser = new JFileChooser();
 	private File[] myFiles;
 	private Peer peer;
+	private Thread pt;
 
 	public PeerPanel() {
 	
-		peer = new Peer();
+		peer = new Peer(this);
+		pt = new Thread(peer);
 
 		setLayout (new BorderLayout());
 
@@ -50,10 +52,10 @@ public class PeerPanel extends JPanel {
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		
 		networkJoinLeave = new JButton("Join/Leave Network");
-		ServerListener srvrListnr = new ServerListener();
-		//PeerListener peerListnr = new PeerListener();
-		networkJoinLeave.addActionListener(srvrListnr);
-		//networkJoinLeave.addActionListener(peerListnr);
+		//ServerListener srvrListnr = new ServerListener();
+		PeerListener peerListnr = new PeerListener();
+		//networkJoinLeave.addActionListener(srvrListnr);
+		networkJoinLeave.addActionListener(peerListnr);
 		
 		normal = new JRadioButton("Normal", true);
 		slow = new JRadioButton("Slow");
@@ -124,7 +126,26 @@ public class PeerPanel extends JPanel {
 	}
 	
 	public void getMessage(String message){
-		activity.append(message);
+		activity.append("\n" + message);
+	}
+	
+	public void listMyFiles(){
+		for (int i=0; i<localModel.getRowCount(); i++){
+			localModel.removeRow(i);
+			peer.removeFile(i);
+		}
+		File folder = fileChooser.getSelectedFile();
+		peer.setFolder(folder.getAbsolutePath());
+		activity.append("\n" + folder.getAbsolutePath() + " set as Shared Directory");
+		myFiles = folder.listFiles();
+		for(File file : myFiles){
+			if(file.getName().endsWith(".mp3")){
+				localModel.addRow(new Object[]{file.getName(),file.getTotalSpace()});
+				try {
+					peer.addFile(file.getName(),file.getTotalSpace());
+				} catch (UnknownHostException e1) {e1.printStackTrace();}
+			}
+		}
 	}
 
 
@@ -144,70 +165,39 @@ public class PeerPanel extends JPanel {
 	private class FileListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			int returnVal = fileChooser.showOpenDialog(new JFrame());
-			if (returnVal == JFileChooser.APPROVE_OPTION){
-				for (int i=0; i<localModel.getRowCount(); i++){
-					localModel.removeRow(i);
-					peer.removeFile(i);
-				}
-				File folder = fileChooser.getSelectedFile();
-				peer.setFolder(folder.getAbsolutePath());
-				activity.append("\n" + folder.getAbsolutePath() + " set as Shared Directory");
-				myFiles = folder.listFiles();
-				for(File file : myFiles){
-					if(file.getName().endsWith(".mp3")){
-						localModel.addRow(new Object[]{file.getName(),file.getTotalSpace()});
-						try {
-							peer.addFile(file.getName(),file.getTotalSpace());
-						} catch (UnknownHostException e1) {e1.printStackTrace();}
-					}
-				}
-			} else {}
+			if (returnVal == JFileChooser.APPROVE_OPTION)
+				listMyFiles();
+			 else {}
 		}
 	}
 
-	private class ServerListener extends SwingWorker<Void,Void>implements ActionListener {
+	private class ServerListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			System.out.println(javax.swing.SwingUtilities.isEventDispatchThread());
-					if(slowMode = true) {
-						activity.append("\nClient starting in slow mode...");
-					} else {
-						activity.append("\nClient starting...");
-					}
-				try {
-					doInBackground();
-				} catch (Exception e1) {e1.printStackTrace();}
+			if(slowMode = true) {
+				activity.append("\nClient starting in slow mode...");
+			} else {
+				activity.append("\nClient starting...");
 			}
-
-		@Override
-		protected Void doInBackground() throws Exception {
+			// Address of server
+			InetAddress targetAddress;
 			try {
-				// Address of server
-				InetAddress targetAddress = InetAddress.getByName("127.0.0.1");
-
+				targetAddress = InetAddress.getByName("127.0.0.1");
 				RDTClient client = new RDTClient(targetAddress, slowMode);
-
 				client.rdtRequest("data.txt");
-			} catch (Exception e1) {e1.printStackTrace();}
-			return null;
-		};
+			} catch (IOException | InterruptedException e1) {e1.printStackTrace();}
 		}
+	}
 
 	
 	private class PeerListener implements ActionListener {
 		public void actionPerformed(ActionEvent e){
-			System.out.println(javax.swing.SwingUtilities.isEventDispatchThread());
-			SwingWorker worker = new SwingWorker<Void,Void>() {
-				public Void doInBackground(){
-					while(true) {
-						Socket requestSocket;
-						try {
-							requestSocket = new ServerSocket(6789).accept();
-							peer.takeRequest(requestSocket.getInetAddress(),requestSocket.getPort(),new BufferedReader(new InputStreamReader(requestSocket.getInputStream())).readLine());
-						} catch (IOException e1) {e1.printStackTrace();}
-					}
-				}
-			};
+			if (!peer.folderSet())
+				activity.append("\nPLEASE SELECT A FOLDER TO SHARE");
+			else{
+				pt.start();
+			}
 		}
+
 	}
 	
 	private class SelectionListener implements ActionListener {

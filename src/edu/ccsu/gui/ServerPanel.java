@@ -66,6 +66,9 @@ public class ServerPanel extends JPanel {
 		add (activityScroll, BorderLayout.SOUTH);
 	}
 
+	public void getMessage(String message){
+		activity.append("\n" + message);
+	}
 	private static byte[] readFromFile(String path) throws IOException {
 
 		File file = new File(path);
@@ -102,7 +105,6 @@ public class ServerPanel extends JPanel {
 			} else {
 				activity.append("\nServer starting...");
 			}
-
 
 					try {
 						RDTServer server = new RDTServer(slowMode);
