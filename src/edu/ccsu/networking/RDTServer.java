@@ -3,20 +3,20 @@ package edu.ccsu.networking;
 import edu.ccsu.gui.ServerPanel;
 import edu.ccsu.util.HttpUtil;
 
-import javax.swing.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
 
 
-public class RDTServer {
+public class RDTServer implements Runnable {
 
     private int sendingPortNumber = 5926;
     private DatagramSocket socket = null;
     private int packetSize = 128;
     private boolean slowMode = false;
-    public byte[] savedData;
+    private byte[] savedData;
+    private static ServerPanel panel;
 
     /**
      * Methods of our HTTP protocol
@@ -32,13 +32,12 @@ public class RDTServer {
      * assign all private variables to the values passed
      * if slow mode is enabled increase timeout
      *
-     * @param slowMode enable/disable slow mode
      */
-    public RDTServer(boolean slowMode) throws SocketException, UnknownHostException {
+    public RDTServer(ServerPanel panel) throws SocketException, UnknownHostException {
         this.sendingPortNumber = 5926;
-        this.slowMode = slowMode;
+        this.slowMode = false;
 
-
+        this.panel = panel;
         socket = new DatagramSocket(this.sendingPortNumber);
     }
 
@@ -49,6 +48,10 @@ public class RDTServer {
         if (socket!=null){
             socket.close();
         }
+    }
+
+    public void changeSlowMode(boolean change) {
+        this.slowMode = change;
     }
 
     public void saveData(byte[] loadedData) {
@@ -109,10 +112,10 @@ public class RDTServer {
             byte[] builtPacket = HttpUtil.buildPacket(packetHeader, packetData);
 
             if(slowMode) {
-                System.out.println("Server sending packet #" + packetNumber + " of size " + builtPacket.length + " in 5 seconds");
+                panel.console("Server sending packet #" + packetNumber + " of size " + builtPacket.length + " in 5 seconds");
                 Thread.sleep(5000);
             } else {
-                System.out.println("Server sending packet #" + packetNumber + " of size " + builtPacket.length);
+                panel.console("Server sending packet #" + packetNumber + " of size " + builtPacket.length);
             }
 
             // Create a DatagramPacket with data builtPacket
@@ -131,7 +134,7 @@ public class RDTServer {
                 DatagramPacket getACK = new DatagramPacket(ack, ack.length);
 
                 try {
-                    System.out.println("Server waiting for ACK for packet #" + packetNumber + " with seq #" + seq);
+                    panel.console("Server waiting for ACK for packet #" + packetNumber + " with seq #" + seq);
 
                     // Wait to receive ACK
                     socket.receive(getACK);
@@ -146,10 +149,10 @@ public class RDTServer {
 
                         // compare sequence numbers to see if correct ACK received
                         if(getSeq != seq) {
-                            System.out.println("Received ACK with seq #" + getSeq + ", wrong seq number.");
+                            panel.console("Received ACK with seq #" + getSeq + ", wrong seq number.");
                             continue;
                         } else {
-                            System.out.println("Received ACK with seq #" + getSeq + ", correct seq number.");
+                            panel.console("Received ACK with seq #" + getSeq + ", correct seq number.");
                             seq = (seq == 0)? 1 : 0;
                             packetNumber++;
                             waiting = false;
@@ -160,7 +163,7 @@ public class RDTServer {
                     }
                 } catch (SocketTimeoutException e) {
                     // Runs when socket times out waiting for an ACK
-                    System.out.println("Server timed out waiting for ACK for packet #" + packetNumber + ". Sending again.");
+                    panel.console("Server timed out waiting for ACK for packet #" + packetNumber + ". Sending again.");
                     continue;
                 }
             }
@@ -183,7 +186,7 @@ public class RDTServer {
 
         socket.setSoTimeout(0);
 
-        System.out.println("Server waiting for a request...");
+        panel.console("Server waiting for a request...");
 
         socket.receive(call);
 
@@ -210,15 +213,15 @@ public class RDTServer {
 
         switch(method) {
             case REQUEST:
-                System.out.println("Received a REQUEST, sending data to client.");
+                panel.console("Received a REQUEST, sending data to client.");
                 rdtSend(this.savedData, packet.getSocketAddress());
                 break;
             case GET:
-                System.out.println("GET not implemented yet.");
+                panel.console("GET not implemented yet.");
                 break;
             case ERROR:
             default:
-                System.out.println("Received an error out of context, doing nothing.");
+                panel.console("Received an error out of context, doing nothing.");
 
         }
 
@@ -237,7 +240,7 @@ public class RDTServer {
 
             }
 
-            System.out.println("Request finished sending, back to waiting form below.");
+            panel.console("Request finished sending, back to waiting form below.");
         }
     }
 

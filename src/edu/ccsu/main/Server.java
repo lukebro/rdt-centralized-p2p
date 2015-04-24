@@ -17,9 +17,9 @@ public class Server {
         } else {
             System.out.println("Server starting...");
         }
+/**
 
-
-        RDTServer server = new RDTServer(slowMode);
+        RDTServer server = new RDTServer();
 
         System.out.println("Reading data from data.txt.");
         byte[] data = readFromFile("data.txt");
@@ -33,7 +33,7 @@ public class Server {
             server.waitFromBelow();
 
             System.out.println("Request finished sending, back to waiting form below.");
-        }
+        }**/
     }
 
     /*
