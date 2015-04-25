@@ -17,6 +17,7 @@ public class RDTServer implements Runnable {
     private boolean slowMode = false;
     private byte[] savedData;
     private static ServerPanel panel;
+    private String state;
 
     /**
      * Methods of our HTTP protocol

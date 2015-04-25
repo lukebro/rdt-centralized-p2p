@@ -2,6 +2,7 @@ package edu.ccsu.structures;
 
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
@@ -15,7 +16,7 @@ public class Entries {
      * Synchronized Hashtable for keeping track of files and their size
      * as well as what peers have the file
      */
-    private Map<String, Entry> Database = new Hashtable<String, Entry>();
+    private Map<String, Entry> Database = new ConcurrentHashMap<String, Entry>();
 
     /**
      * Add Entry to Database, if entry is already in adds peer to entry

@@ -11,7 +11,7 @@ import java.io.FileInputStream;
 import java.io.File;
 import java.net.*;
 
-public class ServerPanel extends JPanel {
+public class ServerPanel extends JPanel implements ConsolePanel {
 
 	private JPanel northGrid = new JPanel();
 	private JRadioButton normal, slow;
@@ -25,6 +25,8 @@ public class ServerPanel extends JPanel {
     private static RDTServer ServerRunnable;
 
 	private JTextArea activity;
+
+    public void processEntries(String[][] entries) {}
 
 	public ServerPanel() throws SocketException, UnknownHostException {
 
