@@ -2,8 +2,6 @@ package edu.ccsu.gui;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.DefaultCaret;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -18,10 +16,13 @@ import edu.ccsu.networking.Peer;
 
 public class PeerPanel extends JPanel {
 
-	private JPanel northGrid, modeGrid,remoteBorder,remoteSouth, localBox, centerGrid;
+	private JPanel northGrid, networkGrid,remoteBorder,remoteSouth, localBox, centerGrid;
 	
 	private JRadioButton normal, slow;
 	private boolean slowMode = false;
+	
+	private JLabel serverLabel = new JLabel("Directory IP: ");
+	private JTextField enterServerIP = new JTextField();
 	
 	private JButton chooseShareFolder, networkJoinLeave, downloadFiles, queryServer;
 	
@@ -55,8 +56,8 @@ public class PeerPanel extends JPanel {
 		PeerListener peerListnr = new PeerListener();
 		networkJoinLeave.addActionListener(peerListnr);
 		
-		normal = new JRadioButton("Normal", true);
-		slow = new JRadioButton("Slow");
+		normal = new JRadioButton("Normal Mode", true);
+		slow = new JRadioButton("Slow Mode");
 		ButtonGroup mode = new ButtonGroup();
 		mode.add(normal);
 		mode.add(slow);
@@ -64,18 +65,20 @@ public class PeerPanel extends JPanel {
 		normal.addActionListener(modeLstnr);
 		slow.addActionListener(modeLstnr);
 		
-		modeGrid = new JPanel();
-		modeGrid.setLayout(new GridLayout(1, 2));
-		modeGrid.setBorder(BorderFactory.createTitledBorder("Transport Speed"));
-		modeGrid.add(normal);
-		modeGrid.add(slow);
+		networkGrid = new JPanel();
+		networkGrid.setLayout(new GridLayout(1, 4));
+		networkGrid.setBorder(BorderFactory.createTitledBorder("Network Settings"));
+		networkGrid.add(serverLabel);
+		networkGrid.add(enterServerIP);
+		networkGrid.add(normal);
+		networkGrid.add(slow);
 		
 		northGrid = new JPanel();
-		northGrid.setLayout(new GridLayout(1, 3));
+		northGrid.setLayout(new GridLayout(2, 2));
 		northGrid.setBorder(BorderFactory.createTitledBorder("Application Setup"));
-		northGrid.add(chooseShareFolder);
+		northGrid.add(networkGrid);
 		northGrid.add(networkJoinLeave);
-		northGrid.add(modeGrid);
+		northGrid.add(chooseShareFolder);
 
 		add(northGrid, BorderLayout.NORTH);
 
