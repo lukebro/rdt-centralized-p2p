@@ -82,7 +82,7 @@ public class RDTServer implements Runnable {
             String[][] packetFields = {{"SEQ_NO", String.valueOf(seq)}, {"DFLAG", "0"}};
 
             // Create a header with method POST and seq number
-            byte[] packetHeader = HttpUtil.createResponseHeader("OK", "202", packetFields);
+            byte[] packetHeader = HttpUtil.createResponseHeader("OK", "200", packetFields);
 
             // Create byte[] where the size = packetSize - packerHeader size
             byte[] packetData = new byte[packetSize - packetHeader.length];
@@ -102,7 +102,7 @@ public class RDTServer implements Runnable {
             if(bytesAvailable == 0) {
                 // Last packet so put dFlag as 1 and rebuilt header will be same size as if with 0, changing 1 byte
                 packetFields[1][1] = "1";
-                packetHeader = HttpUtil.createResponseHeader("OK", "202", packetFields);
+                packetHeader = HttpUtil.createResponseHeader("OK", "200", packetFields);
             }
 
 
