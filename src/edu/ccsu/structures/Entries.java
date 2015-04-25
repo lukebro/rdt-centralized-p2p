@@ -12,7 +12,7 @@ import java.util.*;
 public class Entries {
 
     /**
-     * Synchronized Hashtable for keeping track of files and there size
+     * Synchronized Hashtable for keeping track of files and their size
      * as well as what peers have the file
      */
     private Map<String, Entry> Database = new Hashtable<String, Entry>();
