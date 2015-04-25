@@ -16,7 +16,7 @@ import java.util.Objects;
 import edu.ccsu.networking.RDTClient;
 import edu.ccsu.networking.Peer;
 
-public class PeerPanel extends JPanel {
+public class PeerPanel extends JPanel implements ConsolePanel {
 
 	private JPanel northGrid, modeGrid,remoteBorder,remoteSouth, localBox, centerGrid;
 	
@@ -38,6 +38,8 @@ public class PeerPanel extends JPanel {
 	private Thread pt;
 	
 	private boolean online = false;
+
+    public void processEntries(String[][] entries) {}
 
 	public PeerPanel() {
 	
