@@ -23,10 +23,20 @@ public class ClientRDT implements ConsolePanel {
         RDT client = new RDT(3010, this, database);
         client.changeSlowMode(true);
         InetSocketAddress server = new InetSocketAddress("127.0.0.1", 2010);
+        client.server = server;
+        Thread ok = new Thread(client);
 
-        client.rdtPost(server);
 
-        database.printAllEntries();
+        ok.start();
+
+
+
+        // when user clicks on request file Peer->makeRequest
+        this.console("Requesting a file name.");
+
+        String ip = client.rdtRequest("Hey.mp4", server);
+
+        System.out.println("Received IP:" + ip);
 
     }
 

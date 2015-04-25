@@ -18,6 +18,9 @@ public class RDT implements Runnable {
     private byte[] data = null;
     private ConsolePanel panel;
     private Entries database;
+    public String mode = "client";
+    public boolean running = true;
+    public InetSocketAddress server;
 
     /**
      * Methods of our HTTP protocol
@@ -42,6 +45,16 @@ public class RDT implements Runnable {
 
         socket = new DatagramSocket(this.ourPort);
     }
+
+    public RDT(int sendingPort, ConsolePanel panel) throws SocketException, UnknownHostException {
+        this.slowMode = false;
+        this.ourPort = sendingPort;
+        this.panel = panel;
+        this.database = null;
+
+        socket = new DatagramSocket(this.ourPort);
+    }
+
 
     public void changeSlowMode(boolean mode) {
         this.slowMode = mode;
@@ -257,12 +270,11 @@ public class RDT implements Runnable {
 
 
     /**
-     * Attemp to join a network
-     * @param server
+     * Client attempt to join a network
      * @throws IOException
      * @throws InterruptedException
      */
-    public void rdtPost(InetSocketAddress server) throws IOException, InterruptedException {
+    public void rdtPost() throws IOException, InterruptedException {
 
         // Create a request for the file, assume it's going to get there
         byte[] request = HttpUtil.createRequestHeader("POST", "join");
@@ -279,7 +291,7 @@ public class RDT implements Runnable {
 
         panel.console("# Sending data " + new String(data));
 
-        DatagramPacket requestPacket = new DatagramPacket(request, request.length, server);
+        DatagramPacket requestPacket = new DatagramPacket(request, request.length, this.server);
 
         panel.console("# Sending request to join network.");
         socket.send(requestPacket);
@@ -298,9 +310,7 @@ public class RDT implements Runnable {
 
         panel.console("# Updating my list.");
 
-        database.destroy();
-
-        database.addEntries(allEntries2);
+        panel.processEntries(allEntries2);
 
         panel.console("# Entries updated.");
     }
@@ -354,6 +364,39 @@ public class RDT implements Runnable {
     }
 
     /**
+     * Request song and peer holder
+     * @param song
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public String rdtRequest(String song, InetSocketAddress receiver) throws IOException, InterruptedException {
+
+        // Create a request for the file, assume it's going to get there
+        byte[] request = HttpUtil.createRequestHeader("REQUEST", song);
+
+        DatagramPacket requestPacket = new DatagramPacket(request, request.length, receiver);
+
+        panel.console("Requesting peer who has '" + song + "'.");
+        socket.send(requestPacket);
+
+
+        byte[] data = new byte[packetSize];
+        DatagramPacket packet = new DatagramPacket(data, data.length);
+
+        socket.receive(packet);
+
+        byte[] builtPacket = Arrays.copyOf(packet.getData(), packet.getLength());
+
+        String[] packetInfo = HttpUtil.parseResponseHeader(builtPacket);
+
+        String name = HttpUtil.parseFields(packetInfo[2])[0][1];
+
+        closeSocket();
+
+        return name;
+    }
+
+    /**
      * Processes an incoming request by looking at the method inside packet
      *
      * @param packet incoming packet we want to process
@@ -367,9 +410,21 @@ public class RDT implements Runnable {
 
         RequestMethods method = RequestMethods.valueOf(packetInfo[0].toUpperCase());
 
+        InetSocketAddress peer = new InetSocketAddress(packet.getAddress(), packet.getPort());
+
         switch(method) {
             case REQUEST:
-                panel.console("@ REQUEST not implemented yet.");
+                String ip = database.getPeer(packetInfo[1]);
+                
+                String[][] fields = {{"PEER", ip}};
+
+                byte[] header = HttpUtil.createResponseHeader("OK", "200", fields);
+                packet.getAddress().getHostAddress();
+
+                DatagramPacket responsePacket = new DatagramPacket(header, header.length, peer);
+
+                socket.send(responsePacket);
+                panel.console("# Sent IP to peer.");
                 break;
             case POST:
                 if(packetInfo[1].equals("join")) {
@@ -382,7 +437,7 @@ public class RDT implements Runnable {
                     String[][] entries = HttpUtil.parseFields(receivedData);
 
                     database.deletePeer(packet.getAddress().getHostAddress());
-                    database.addEntries(entries);
+                    database.addEntries(entries, packet.getAddress().getHostAddress());
 
                     panel.console("@ Peer entries added to database.");
 
@@ -394,7 +449,6 @@ public class RDT implements Runnable {
                         allEntries += ourEntries[i][0] + ": " + ourEntries[i][1] + "\r\n";
                     }
 
-                    InetSocketAddress peer = new InetSocketAddress(packet.getAddress(), packet.getPort());
 
                     rdtSend(allEntries.getBytes(), peer, "OK");
 
@@ -406,17 +460,30 @@ public class RDT implements Runnable {
 
         }
 
+        database.printAllEntries();
+
     }
 
     public void run() {
-        while(true) {
-            this.changeSlowMode(true);
+        if(this.mode.equals("client")) {
+            // Client RDT Send and connect;
+            // make sure client.server = InetSocketAddress
             try {
-                this.waitFromBelow();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                this.rdtPost();
+            } catch (Exception e) { e.printStackTrace();}
+
+        } else if(this.mode.equals("server")){
+
+            while (running) {
+                this.changeSlowMode(true);
+                try {
+                    this.waitFromBelow();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
             }
         }
     }

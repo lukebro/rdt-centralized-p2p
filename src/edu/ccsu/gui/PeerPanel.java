@@ -228,8 +228,10 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 					catch(ArrayIndexOutOfBoundsException e1) {console("Please select a file");}
 					catch (ConnectException e1) {e1.printStackTrace();}
 					catch (UnknownHostException e1) {e1.printStackTrace();}
-					catch (IOException e1) {e1.printStackTrace();}
-				}
+					catch (IOException e1) {e1.printStackTrace();} catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
+                }
 			}
 		}
 	}

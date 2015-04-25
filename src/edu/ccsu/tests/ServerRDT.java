@@ -14,7 +14,7 @@ public class ServerRDT implements ConsolePanel {
 
 
         RDT server = new RDT(2010, this, database);
-
+        server.mode = "server";
         Thread ok = new Thread(server);
 
         ok.start();

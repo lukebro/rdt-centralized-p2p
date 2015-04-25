@@ -68,9 +68,9 @@ public class Entries {
      * Add entries from a field area of HTTP header
      * @param entries String[][] of fields from header
      */
-    public void addEntries(String[][] entries) {
+    public void addEntries(String[][] entries, String ip) {
         for(int i = 0; i < entries.length; i++) {
-            this.addEntry(entries[i][0], Long.parseLong(entries[i][1]));
+            this.addEntry(entries[i][0], Long.parseLong(entries[i][1]), ip);
         }
     }
 
@@ -99,6 +99,15 @@ public class Entries {
         for(String key: keys){
             System.out.println("Name: " + key + " " + Database.get(key));
         }
+    }
+
+    /**
+     * Returns string of peer with file
+     * @param name
+     * @return peer ip
+     */
+    public String getPeer(String name) {
+        return Database.get(name).getIp();
     }
 
 

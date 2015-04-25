@@ -10,6 +10,7 @@ import java.util.Objects;
 import edu.ccsu.gui.PeerPanel;
 import edu.ccsu.structures.Entries;
 import edu.ccsu.util.HttpUtil;
+import edu.ccsu.networking.RDT;
 
 public class Peer implements Runnable {
 
@@ -43,13 +44,19 @@ public class Peer implements Runnable {
 		pst.start();
 	}
 
-	public void makeRequest (String song) throws UnknownHostException, IOException, ConnectException {
+	public void makeRequest (String song) throws UnknownHostException, IOException, ConnectException, InterruptedException {
 		pp.console("Requesting address of " + song);
-		/*
-		 * Insert code to contact directory server for ip. 
-		 * Pass to PeerClient constructor below.
-		 */
-		InetAddress ip = InetAddress.getByName("127.0.0.1");
+
+        /// Access to server socket address from PP
+        InetSocketAddress server = new InetSocketAddress("127.0.0.1", 2010);
+
+        // will fail if other threads exist
+        RDT client = new RDT(3010, pp);
+
+        String peerIp = client.rdtRequest(song, server);
+
+
+		InetAddress ip = InetAddress.getByName(peerIp);
 		pp.console("Downloading " + song + " from " + ip.toString());
 		PeerClient pc = new PeerClient(ip, song);
 		Thread pct = new Thread(pc);
@@ -74,7 +81,7 @@ public class Peer implements Runnable {
 		fileList.destroy();
 	}
 
-	private class PeerServer extends Thread{
+	private class PeerServer extends Thread {
 
 		InetAddress ip;
 		int port;
