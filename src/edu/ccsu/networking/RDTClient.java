@@ -41,10 +41,32 @@ public class RDTClient {
         }
     }
 
-    public void rdtRequest(String name) throws IOException, InterruptedException {
+    /**
+     * Request song and peer holder
+     * @param song
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public void rdtRequest(String song) throws IOException, InterruptedException {
 
         // Create a request for the file, assume it's going to get there
-        byte[] request = HttpUtil.createRequestHeader("REQUEST", name);
+        byte[] request = HttpUtil.createRequestHeader("REQUEST", song);
+
+        DatagramPacket requestPacket = new DatagramPacket(request, request.length, this.internetAddress, this.serverPortNumber);
+
+        System.out.println("Sending request and hoping it gets there...");
+        socket.send(requestPacket);
+
+        System.out.println("Starting to wait for data from server.");
+        rdtReceive();
+        System.out.println("Combining all packets and delivering data:");
+        buildFile();
+    }
+
+    public void rdtPost(String[][] entries) throws IOException, InterruptedException {
+        // Create a request for the file, assume it's going to get there
+        byte[] request = HttpUtil.createRequestHeader("POST", "updList");
+
 
         DatagramPacket requestPacket = new DatagramPacket(request, request.length, this.internetAddress, this.serverPortNumber);
 

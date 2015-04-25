@@ -65,6 +65,7 @@ public class ServerPanel extends JPanel {
 		add(centerGrid, BorderLayout.CENTER);
 
 		activity =  new JTextArea("System Ready\n",5,20);
+        activity.setEditable(false);
 		activityScroll = new JScrollPane(activity);
 		add (activityScroll, BorderLayout.SOUTH);
 
@@ -72,7 +73,9 @@ public class ServerPanel extends JPanel {
 	}
 
 	public void console(String message){
-		activity.append(message + "\n");
+
+        activity.append(message + "\n");
+        activity.selectAll();
 	}
 
 	private static byte[] readFromFile(String path) throws IOException {

@@ -97,3 +97,30 @@ Server Entries.addEntries(String[][]);
 Server getEntries();
 createResponseHeader("OK", "200");
 rdtSend(data, ip, port);
+
+
+
+Client POST updList 4 packets
+Starts timeout & waiting.
+
+Server is waiting for request
+Receives first packet, goes into waiting for rest of sequence until dflag=1;
+Server receives packet 1 ACKS
+Client gets ack sends 2
+Server receives packet 2 ACKS
+Client get ack sends 3
+Server receives packet 3 ACKS
+Client get ack sends 4
+Server receives packet 4 ACKS
+Client get ACK sends REQUEST ~~~~~~
+Client goes into waiting for updated list
+Server waiting for a request
+Server waiting for a request
+server waiting for a request
+
+Server goes into rdtSend updated list of entries to server (now server has a timeout)
+Server sent packet 1 expecting ACK 0
+Client has not received ACK 4
+Sends packet 4
+Send packet
+Server packet 1

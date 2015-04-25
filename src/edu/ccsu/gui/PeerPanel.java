@@ -118,6 +118,7 @@ public class PeerPanel extends JPanel {
 		add(centerGrid, BorderLayout.CENTER);
 
 		activity = new JTextArea("System Ready...\n",5,20);
+		activity.setEditable(false);
 		activityScroll = new JScrollPane(activity);
 
 		add(activityScroll, BorderLayout.SOUTH);
