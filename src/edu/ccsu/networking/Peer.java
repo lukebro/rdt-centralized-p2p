@@ -26,7 +26,7 @@ public class Peer implements Runnable {
 			Socket requestSocket;
 			try {
 				pp.getMessage("\nOnline and waiting to share.");
-				requestSocket = new ServerSocket(6789).accept();
+				requestSocket = new ServerSocket(1010).accept();
 				takeRequest(requestSocket.getInetAddress(),requestSocket.getPort(),new BufferedReader(new InputStreamReader(requestSocket.getInputStream())).readLine());
 			} catch (IOException e1) {e1.printStackTrace();}
 		}
@@ -96,8 +96,9 @@ public class Peer implements Runnable {
 				Socket peerSocket;
 				try {
 					peerSocket = new Socket(ip,port);
-					copyFile(shareFolder +"/" + song);
+					copyFile(song);
 					DataOutputStream sendFile = new DataOutputStream(peerSocket.getOutputStream());
+					peerSocket.getOutputStream().write(packet, 0, packet.length);;
 					peerSocket.close();
 					pp.getMessage("Done sending " + song + " to " + ip.toString());
 				} catch (IOException e) {e.printStackTrace();}
@@ -105,7 +106,10 @@ public class Peer implements Runnable {
 		}
 
 		private byte[] copyFile(String fileName) throws IOException{
-			byte[] data = Files.readAllBytes(Paths.get(fileName));
+			File copy = new File(shareFolder + "/" + fileName);
+			byte[] data = "HTTP/1.1 OK 202\r\nname: ".getBytes(). fileName.getBytes() "\r\nsize: ".getBytes()
+					copy.getTotalSpace().getBytes()
+					Files.readAllBytes(Paths.get(shareFolder + "/" + fileName));
 			return data;
 		}
 
