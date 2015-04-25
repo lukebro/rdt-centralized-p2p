@@ -5,16 +5,17 @@ import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import edu.ccsu.gui.PeerPanel;
-import edu.ccsu.structures.Entry;
+import edu.ccsu.structures.Entries;
 import edu.ccsu.util.HttpUtil;
 
 public class Peer implements Runnable {
 
 	private String shareFolder = "";
-	private ArrayList<Entry> fileList = new ArrayList<Entry>();
-	private ArrayList<Entry> remoteFiles = new ArrayList<Entry>();
+	private Entries fileList = new Entries();
+	private Entries remoteFiles = new Entries();
 	private PeerPanel pp;
 
 	public Peer(PeerPanel pp) {
@@ -25,7 +26,7 @@ public class Peer implements Runnable {
 		while(true) {
 			Socket requestSocket;
 			try {
-				pp.getMessage("\nOnline and waiting to share.");
+				pp.getMessage("Waiting for requests...");
 				requestSocket = new ServerSocket(1010).accept();
 				takeRequest(requestSocket.getInetAddress(),requestSocket.getPort(),new BufferedReader(new InputStreamReader(requestSocket.getInputStream())).readLine());
 			} catch (IOException e1) {e1.printStackTrace();}
@@ -62,11 +63,11 @@ public class Peer implements Runnable {
 	}
 
 	public void addFile(String name, long size) throws UnknownHostException{
-		fileList.add(new Entry(InetAddress.getLocalHost().toString(),name, size));
+		fileList.addEntry(name, size);
 	}
 
-	public void removeFile(int index){
-		fileList.remove(index);
+	public void removeFiles(){
+		fileList.destroy();
 	}
 
 	public String getRemoteFiles(int entry){
@@ -90,27 +91,28 @@ public class Peer implements Runnable {
 		}
 
 		public void run () {
-			String song = request.split(" ")[1];
-			pp.getMessage(song + " being shared with " + ip.toString());
-			if (Paths.get(shareFolder +"/" + song).isAbsolute()){
+			String file = request.split(" ")[1];
+			pp.getMessage(file + " being shared with " + ip.toString());
+			if (Paths.get(shareFolder +"/" + file).isAbsolute()){
 				Socket peerSocket;
 				try {
 					peerSocket = new Socket(ip,port);
-					copyFile(song);
+					byte[] packet = copyFile(file);
 					DataOutputStream sendFile = new DataOutputStream(peerSocket.getOutputStream());
 					peerSocket.getOutputStream().write(packet, 0, packet.length);;
 					peerSocket.close();
-					pp.getMessage("Done sending " + song + " to " + ip.toString());
+					pp.getMessage("Done sending " + file + " to " + ip.toString());
 				} catch (IOException e) {e.printStackTrace();}
 			}
 		}
 
 		private byte[] copyFile(String fileName) throws IOException{
 			File copy = new File(shareFolder + "/" + fileName);
-			byte[] data = "HTTP/1.1 OK 202\r\nname: ".getBytes(). fileName.getBytes() "\r\nsize: ".getBytes()
-					copy.getTotalSpace().getBytes()
-					Files.readAllBytes(Paths.get(shareFolder + "/" + fileName));
-			return data;
+			String[][] fields = {{"peer",fileName},{"size",Objects.toString(copy.getTotalSpace(), null)}};
+			byte[] header = HttpUtil.createResponseHeader("OK", "202", fields);
+			byte[] data = Files.readAllBytes(Paths.get(shareFolder + "/" + fileName));
+			byte[] packet = HttpUtil.buildPacket(header, data);
+			return packet;
 		}
 
 	}
@@ -129,12 +131,10 @@ public class Peer implements Runnable {
 			Socket peerSocket;
 			try {
 				peerSocket = new Socket(ip,1010);
-				byte[] packet = HttpUtil.buildPacket(HttpUtil.createHeader("GET", song),"0".getBytes());
+				byte[] packet = HttpUtil.buildPacket(HttpUtil.createRequestHeader("GET", song), null);
 				DataOutputStream request = new DataOutputStream(peerSocket.getOutputStream());
 				request.write(packet);
-				//InetAddress myIP = peerSocket.getLocalAddress();
-				//int myPort = peerSocket.getLocalPort();
-				//BufferedReader reply = new BufferedReader(New InputStream)
+				BufferedReader reply = new BufferedReader(new InputStreamReader(peerSocket.getInputStream()));
 				peerSocket.close();
 				pp.getMessage("Finished downloading " + song);
 				pp.listMyFiles();
