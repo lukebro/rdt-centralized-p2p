@@ -15,7 +15,7 @@ public class Peer implements Runnable {
 
 	private String shareFolder = "";
 	private Entries fileList = new Entries();
-	private Entries remoteFiles = new Entries();
+	private Socket requestSocket;
 	private PeerPanel pp;
 
 	public Peer(PeerPanel pp) {
@@ -24,13 +24,17 @@ public class Peer implements Runnable {
 
 	public void run() {
 		while(true) {
-			Socket requestSocket;
 			try {
 				pp.getMessage("Waiting for requests...");
 				requestSocket = new ServerSocket(1010).accept();
 				takeRequest(requestSocket.getInetAddress(),requestSocket.getPort(),new BufferedReader(new InputStreamReader(requestSocket.getInputStream())).readLine());
 			} catch (IOException e1) {e1.printStackTrace();}
 		}
+	}
+	
+	public void leaveNetwork() throws IOException {
+		requestSocket.close();
+		pp.getMessage("Signed Off.");
 	}
 
 	public void takeRequest(InetAddress ip, int port, String request) throws IOException{
@@ -39,7 +43,7 @@ public class Peer implements Runnable {
 		pst.start();
 	}
 
-	public void makeRequest (String song) throws UnknownHostException, IOException {
+	public void makeRequest (String song) throws UnknownHostException, IOException, ConnectException {
 		pp.getMessage("Requesting address of " + song);
 		/*
 		 * Insert code to contact directory server for ip. 
@@ -70,19 +74,11 @@ public class Peer implements Runnable {
 		fileList.destroy();
 	}
 
-	public String getRemoteFiles(int entry){
-		String selection;
-		selection = remoteFiles.get(entry).getEntry();
-		return selection;	
-	}
-
-
 	private class PeerServer extends Thread{
 
 		InetAddress ip;
 		int port;
 		String request;
-
 
 		public PeerServer(InetAddress ip, int port, String request){
 			this.ip = ip;
@@ -108,7 +104,7 @@ public class Peer implements Runnable {
 
 		private byte[] copyFile(String fileName) throws IOException{
 			File copy = new File(shareFolder + "/" + fileName);
-			String[][] fields = {{"peer",fileName},{"size",Objects.toString(copy.getTotalSpace(), null)}};
+			String[][] fields = {{"peer",fileName},{"size",Objects.toString(copy.length(), null)}};
 			byte[] header = HttpUtil.createResponseHeader("OK", "202", fields);
 			byte[] data = Files.readAllBytes(Paths.get(shareFolder + "/" + fileName));
 			byte[] packet = HttpUtil.buildPacket(header, data);
@@ -138,7 +134,9 @@ public class Peer implements Runnable {
 				peerSocket.close();
 				pp.getMessage("Finished downloading " + song);
 				pp.listMyFiles();
-			} catch (IOException e) {e.printStackTrace();}
+			} 
+			catch (ConnectException e1){pp.getMessage("The host of " + song + " is unavailable");}
+			catch (IOException e) {pp.getMessage("There was an error downloading " + song);}
 		}
 	}
 }

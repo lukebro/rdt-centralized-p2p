@@ -2,13 +2,16 @@ package edu.ccsu.gui;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.DefaultCaret;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Objects;
 
 import edu.ccsu.networking.RDTClient;
 import edu.ccsu.networking.Peer;
@@ -33,6 +36,8 @@ public class PeerPanel extends JPanel {
 	private File[] myFiles;
 	private Peer peer;
 	private Thread pt;
+	
+	private boolean online = false;
 
 	public PeerPanel() {
 	
@@ -46,10 +51,8 @@ public class PeerPanel extends JPanel {
 		chooseShareFolder.addActionListener(fileListnr);
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		
-		networkJoinLeave = new JButton("Join/Leave Network");
-		//ServerListener srvrListnr = new ServerListener();
+		networkJoinLeave = new JButton("Join Network");
 		PeerListener peerListnr = new PeerListener();
-		//networkJoinLeave.addActionListener(srvrListnr);
 		networkJoinLeave.addActionListener(peerListnr);
 		
 		normal = new JRadioButton("Normal", true);
@@ -118,22 +121,26 @@ public class PeerPanel extends JPanel {
 		activityScroll = new JScrollPane(activity);
 
 		add(activityScroll, BorderLayout.SOUTH);
+		
+		remoteModel.addRow(new Object[]{"My file",1000});
+		
 	}
 	
 	public void getMessage(String message){
 		activity.append("\n" + message);
+		activity.selectAll();
 	}
 	
 	public void listMyFiles(){
 		peer.removeFiles();
 		File folder = fileChooser.getSelectedFile();
 		peer.setFolder(folder.getAbsolutePath());
-		activity.append("\n" + folder.getAbsolutePath() + " set as Shared Directory");
+		getMessage(folder.getAbsolutePath() + " set as Shared Directory");
 		myFiles = folder.listFiles();
 		for(File file : myFiles){
-			localModel.addRow(new Object[]{file.getName(),file.getTotalSpace()});
+			localModel.addRow(new Object[]{file.getName(),file.length()});
 			try {
-				peer.addFile(file.getName(),file.getTotalSpace());
+				peer.addFile(file.getName(),file.length());
 			} catch (UnknownHostException e1) {e1.printStackTrace();}
 		}
 	}
@@ -161,44 +168,63 @@ public class PeerPanel extends JPanel {
 		}
 	}
 
-	private class ServerListener implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			if(slowMode = true) {
-				activity.append("\nClient starting in slow mode...");
-			} else {
-				activity.append("\nClient starting...");
-			}
-			// Address of server
-			InetAddress targetAddress;
-			try {
-				targetAddress = InetAddress.getByName("127.0.0.1");
-				RDTClient client = new RDTClient(targetAddress, slowMode);
-				client.rdtRequest("data.txt");
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-
-		}
-	}
-
-	
 	private class PeerListener implements ActionListener {
-		public void actionPerformed(ActionEvent e){
-			if (!peer.folderSet())
-				activity.append("\nPLEASE SELECT A FOLDER TO SHARE");
+		public void actionPerformed(ActionEvent e) {
+			if (!peer.folderSet()){
+				getMessage("PLEASE SELECT A FOLDER TO SHARE");
+			}
 			else{
 				pt.start();
+				if(slowMode = true) {
+					getMessage("Client starting in slow mode...");
+				} else {
+					getMessage("Client starting...");
+				}
+				if (online){
+					try {peer.leaveNetwork();} catch (IOException e1) {e1.printStackTrace();}
+					online = false;
+					networkJoinLeave.setText("Join Network");
+				}
+				else{	
+					online = true;
+					networkJoinLeave.setText("Leave Network");
+					InetAddress targetAddress;
+					try {
+						targetAddress = InetAddress.getByName("127.0.0.1");//Update to server IP
+						RDTClient client = new RDTClient(targetAddress, slowMode);
+						//RDT Client should compile file list and send it to directory server
+						//then populate remoteFileList with response
+						// Will the server send updated list to other peers when new peer joins?
+						client.rdtRequest("data.txt");//remove?
+					} catch (Exception e1) {e1.printStackTrace();}
+				}
 			}
 		}
-
 	}
-	
+
 	private class SelectionListener implements ActionListener {
 		public void actionPerformed(ActionEvent e){
-			int row = remoteTable.getSelectedRows()[0];
-			try {
-				peer.makeRequest(peer.getRemoteFiles(row));
-			} catch (IOException e1) {e1.printStackTrace();}
+			if (!online){
+				getMessage("You must join the network before requesting files.");
+			}
+			else {
+				if (remoteTable.getRowCount() == 0)
+					getMessage("No files available for download");
+				else {
+					int row;
+					String file;
+					try {
+						row = remoteTable.getSelectedRows()[0];
+						file = Objects.toString(remoteTable.getValueAt(row, 0));
+						getMessage("Requesting " + file);
+						peer.makeRequest(file);
+					}
+					catch(ArrayIndexOutOfBoundsException e1) {getMessage("Please select a file");}
+					catch (ConnectException e1) {e1.printStackTrace();}
+					catch (UnknownHostException e1) {e1.printStackTrace();}
+					catch (IOException e1) {e1.printStackTrace();}
+				}
+			}
 		}
 	}
 }
