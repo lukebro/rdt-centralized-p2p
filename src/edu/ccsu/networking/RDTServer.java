@@ -11,7 +11,7 @@ import java.util.Arrays;
 
 public class RDTServer implements Runnable {
 
-    private int sendingPortNumber = 5926;
+    private int sendingPortNumber = 2010;
     private DatagramSocket socket = null;
     private int packetSize = 128;
     private boolean slowMode = false;
@@ -21,10 +21,9 @@ public class RDTServer implements Runnable {
     /**
      * Methods of our HTTP protocol
      */
-    private enum Methods {
-        REQUEST, // Request list of files
-        GET, // Get user with file
-        ERROR // Error
+    private enum RequestMethods {
+        REQUEST, // Request a file
+        POST // Update file list
     }
 
     /**
@@ -34,7 +33,6 @@ public class RDTServer implements Runnable {
      *
      */
     public RDTServer(ServerPanel panel) throws SocketException, UnknownHostException {
-        this.sendingPortNumber = 5926;
         this.slowMode = false;
 
         this.panel = panel;
@@ -81,10 +79,10 @@ public class RDTServer implements Runnable {
             waiting = true;
 
             // Create field for done flag
-            String[][] packetFields = {{"dFlag", "0"}};
+            String[][] packetFields = {{"SEQ_NO", String.valueOf(seq)}, {"DFLAG", "0"}};
 
             // Create a header with method POST and seq number
-            byte[] packetHeader = HttpUtil.createHeader("POST", String.valueOf(seq), packetFields);
+            byte[] packetHeader = HttpUtil.createResponseHeader("OK", "200", packetFields);
 
             // Create byte[] where the size = packetSize - packerHeader size
             byte[] packetData = new byte[packetSize - packetHeader.length];
@@ -103,8 +101,8 @@ public class RDTServer implements Runnable {
             // If this is the last packet
             if(bytesAvailable == 0) {
                 // Last packet so put dFlag as 1 and rebuilt header will be same size as if with 0, changing 1 byte
-                packetFields[0][1] = "1";
-                packetHeader = HttpUtil.createHeader("POST", String.valueOf(seq), packetFields);
+                packetFields[1][1] = "1";
+                packetHeader = HttpUtil.createResponseHeader("OK", "200", packetFields);
             }
 
 
@@ -207,19 +205,20 @@ public class RDTServer implements Runnable {
     private void processRequest(DatagramPacket packet) throws IOException, InterruptedException {
 
         byte[] data = packet.getData();
-        String[] packetInfo = HttpUtil.parseHeader(data);
+        String[] packetInfo = HttpUtil.parseRequestHeader(data);
 
-        Methods method = Methods.valueOf(packetInfo[0].toUpperCase());
+        RequestMethods method = RequestMethods.valueOf(packetInfo[0].toUpperCase());
 
         switch(method) {
             case REQUEST:
-                panel.console("Received a REQUEST, sending data to client.");
+                // Handle Request
+                panel.console("Received a REQUEST, sending response to client.");
                 rdtSend(this.savedData, packet.getSocketAddress());
                 break;
-            case GET:
-                panel.console("GET not implemented yet.");
+            case POST:
+                // Handle Post
+                panel.console("POST not implemented yet.");
                 break;
-            case ERROR:
             default:
                 panel.console("Received an error out of context, doing nothing.");
 

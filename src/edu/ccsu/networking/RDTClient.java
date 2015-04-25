@@ -8,8 +8,8 @@ import java.util.Arrays;
 
 
 public class RDTClient {
-    private int serverPortNumber = 5926;
-    private int clientPortNumber = 3141;
+    private int serverPortNumber = 2010;
+    private int clientPortNumber = 3010;
     private DatagramSocket socket = null;
     private InetAddress internetAddress = null;
     private boolean slowMode = false;
@@ -41,10 +41,10 @@ public class RDTClient {
         }
     }
 
-    public void rdtRequest(String file) throws IOException, InterruptedException {
+    public void rdtRequest(String name) throws IOException, InterruptedException {
 
         // Create a request for the file, assume it's going to get there
-        byte[] request = HttpUtil.createHeader("REQUEST", file);
+        byte[] request = HttpUtil.createRequestHeader("REQUEST", name);
 
         DatagramPacket requestPacket = new DatagramPacket(request, request.length, this.internetAddress, this.serverPortNumber);
 
@@ -82,10 +82,16 @@ public class RDTClient {
 
             // once packet is received get data and put into byte array
             byte[] builtPacket = Arrays.copyOf(packet.getData(), packet.getLength());
+            String[] packetInfo = HttpUtil.parseResponseHeader(builtPacket);
+
+            if(!packetInfo[0].equals("OK") && !packetInfo[1].equals("207")) {
+                // Did not receive an OK
+                break;
+            }
+
 
             // parse header to get the current sequence number
-            String[] packetInfo = HttpUtil.parseHeader(builtPacket);
-            currentSeq = Integer.parseInt(packetInfo[1]);
+            currentSeq = HttpUtil.getSeq(builtPacket);
 
 
             byte[] ackPacket;
@@ -112,7 +118,7 @@ public class RDTClient {
                 String[][] packetField = HttpUtil.parseFields(packetInfo[2]);
 
                 // If dFlag is set to 1 this is last packet
-                if(packetField[0][0].equals("dFlag") && Integer.parseInt(packetField[0][1]) == 1) {
+                if(packetField[1][0].equals("DFLAG") && Integer.parseInt(packetField[1][1]) == 1) {
                     waiting = false;
                 }
             }

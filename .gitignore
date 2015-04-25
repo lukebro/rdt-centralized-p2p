@@ -6,7 +6,7 @@
 # Luke's IDE Project Files
 out/
 .idea/
-FinalProject.iml
+*.iml
 
 # Package Files #
 *.jar
