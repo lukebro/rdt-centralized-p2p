@@ -5,16 +5,11 @@ import javax.swing.table.DefaultTableModel;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import edu.ccsu.main.PeerFrame;
 import edu.ccsu.networking.RDTClient;
 import edu.ccsu.networking.Peer;
 

@@ -1,18 +1,15 @@
 package edu.ccsu.gui;
 
-import edu.ccsu.util.HttpUtil;
 import edu.ccsu.networking.RDTServer;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.File;
 import java.net.*;
-import java.util.Arrays;
 
 public class ServerPanel extends JPanel {
 
