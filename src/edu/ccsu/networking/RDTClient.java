@@ -84,7 +84,7 @@ public class RDTClient {
             byte[] builtPacket = Arrays.copyOf(packet.getData(), packet.getLength());
             String[] packetInfo = HttpUtil.parseResponseHeader(builtPacket);
 
-            if(!packetInfo[0].equals("OK") && !packetInfo[1].equals("207")) {
+            if(!packetInfo[0].equals("OK") && !packetInfo[1].equals("200")) {
                 // Did not receive an OK
                 break;
             }

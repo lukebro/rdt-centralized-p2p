@@ -44,7 +44,7 @@ public class PeerPanel extends JPanel {
 		peer = new Peer(this);
 		pt = new Thread(peer);
 
-		setLayout (new BorderLayout());
+		setLayout(new BorderLayout());
 
 		chooseShareFolder = new JButton("Choose Shared Directory");
 		FileListener fileListnr = new FileListener();
@@ -65,13 +65,13 @@ public class PeerPanel extends JPanel {
 		slow.addActionListener(modeLstnr);
 		
 		modeGrid = new JPanel();
-		modeGrid.setLayout(new GridLayout(1,2));
+		modeGrid.setLayout(new GridLayout(1, 2));
 		modeGrid.setBorder(BorderFactory.createTitledBorder("Transport Speed"));
 		modeGrid.add(normal);
 		modeGrid.add(slow);
 		
 		northGrid = new JPanel();
-		northGrid.setLayout(new GridLayout(1,3));
+		northGrid.setLayout(new GridLayout(1, 3));
 		northGrid.setBorder(BorderFactory.createTitledBorder("Application Setup"));
 		northGrid.add(chooseShareFolder);
 		northGrid.add(networkJoinLeave);
@@ -117,17 +117,17 @@ public class PeerPanel extends JPanel {
 
 		add(centerGrid, BorderLayout.CENTER);
 
-		activity = new JTextArea("System Ready",5,20);
+		activity = new JTextArea("System Ready...\n",5,20);
 		activityScroll = new JScrollPane(activity);
 
 		add(activityScroll, BorderLayout.SOUTH);
 		
-		remoteModel.addRow(new Object[]{"My file",1000});
+		remoteModel.addRow(new Object[]{"My file", 1000});
 		
 	}
 	
-	public void getMessage(String message){
-		activity.append("\n" + message);
+	public void console(String message){
+		activity.append(message + "\n");
 		activity.selectAll();
 	}
 	
@@ -135,7 +135,7 @@ public class PeerPanel extends JPanel {
 		peer.removeFiles();
 		File folder = fileChooser.getSelectedFile();
 		peer.setFolder(folder.getAbsolutePath());
-		getMessage(folder.getAbsolutePath() + " set as Shared Directory");
+		console(folder.getAbsolutePath() + " set as Shared Directory");
 		myFiles = folder.listFiles();
 		for(File file : myFiles){
 			localModel.addRow(new Object[]{file.getName(),file.length()});
@@ -171,14 +171,14 @@ public class PeerPanel extends JPanel {
 	private class PeerListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 			if (!peer.folderSet()){
-				getMessage("PLEASE SELECT A FOLDER TO SHARE");
+				console("PLEASE SELECT A FOLDER TO SHARE");
 			}
 			else{
 				pt.start();
 				if(slowMode = true) {
-					getMessage("Client starting in slow mode...");
+					console("Client starting in slow mode...");
 				} else {
-					getMessage("Client starting...");
+					console("Client starting...");
 				}
 				if (online){
 					try {peer.leaveNetwork();} catch (IOException e1) {e1.printStackTrace();}
@@ -205,21 +205,21 @@ public class PeerPanel extends JPanel {
 	private class SelectionListener implements ActionListener {
 		public void actionPerformed(ActionEvent e){
 			if (!online){
-				getMessage("You must join the network before requesting files.");
+				console("You must join the network before requesting files.");
 			}
 			else {
 				if (remoteTable.getRowCount() == 0)
-					getMessage("No files available for download");
+					console("No files available for download");
 				else {
 					int row;
 					String file;
 					try {
 						row = remoteTable.getSelectedRows()[0];
 						file = Objects.toString(remoteTable.getValueAt(row, 0));
-						getMessage("Requesting " + file);
+						console("Requesting " + file);
 						peer.makeRequest(file);
 					}
-					catch(ArrayIndexOutOfBoundsException e1) {getMessage("Please select a file");}
+					catch(ArrayIndexOutOfBoundsException e1) {console("Please select a file");}
 					catch (ConnectException e1) {e1.printStackTrace();}
 					catch (UnknownHostException e1) {e1.printStackTrace();}
 					catch (IOException e1) {e1.printStackTrace();}

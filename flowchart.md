@@ -66,6 +66,8 @@ song1.mp4: 2323232\r\n
 \r\n
 ```
 
+
+
 ~~~~~~~~~~
 
 
@@ -78,3 +80,20 @@ overall main:
 		-
 		-
 	1 thread - peer, size, name - > TCP connection with peer - once done getting entire file destroy
+
+
+
+
+
+
+Client -> Server
+
+Client POST to server
+
+Server parses data as field
+Server Entries.deleteByIP(Client IP);
+Server Entries.addEntries(String[][]);
+
+Server getEntries();
+createResponseHeader("OK", "200");
+rdtSend(data, ip, port);
