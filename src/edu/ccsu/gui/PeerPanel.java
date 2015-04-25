@@ -125,21 +125,16 @@ public class PeerPanel extends JPanel {
 	}
 	
 	public void listMyFiles(){
-		for (int i=0; i<localModel.getRowCount(); i++){
-			localModel.removeRow(i);
-			peer.removeFile(i);
-		}
+		peer.removeFiles();
 		File folder = fileChooser.getSelectedFile();
 		peer.setFolder(folder.getAbsolutePath());
 		activity.append("\n" + folder.getAbsolutePath() + " set as Shared Directory");
 		myFiles = folder.listFiles();
 		for(File file : myFiles){
-			if(file.getName().endsWith(".mp3")){
-				localModel.addRow(new Object[]{file.getName(),file.getTotalSpace()});
-				try {
-					peer.addFile(file.getName(),file.getTotalSpace());
-				} catch (UnknownHostException e1) {e1.printStackTrace();}
-			}
+			localModel.addRow(new Object[]{file.getName(),file.getTotalSpace()});
+			try {
+				peer.addFile(file.getName(),file.getTotalSpace());
+			} catch (UnknownHostException e1) {e1.printStackTrace();}
 		}
 	}
 
