@@ -24,14 +24,12 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 	private DefaultTableModel model = new DefaultTableModel();
 	private JTable table = new JTable(model){public boolean isCellEditable(int row, int col){return false;}};
 	private JScrollPane contentScroll, activityScroll;
-    //private static Thread Server;
-   // private static RDTServer ServerRunnable;
-	private RDT server;
+	private RDT serverRunnable;
 	private boolean online = false;
+	private Thread server;
+    private Entries database;
 
 	private JTextArea activity;
-
-    public void processEntries(String[][] entries) {}
 
 	public ServerPanel() throws SocketException, UnknownHostException {
 
@@ -76,7 +74,7 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 		activityScroll = new JScrollPane(activity);
 		add (activityScroll, BorderLayout.SOUTH);
 
-        //ServerRunnable = new RDTServer(this);
+        database = new Entries();
 	}
 
 	public void console(String message){
@@ -84,6 +82,13 @@ public class ServerPanel extends JPanel implements ConsolePanel {
         activity.append(message + "\n");
         activity.selectAll();
 	}
+
+    public void processEntries(String[][] entries) {
+        model.setNumRows(0);
+        for(int i = 0; i < entries.length; i++) {
+            model.addRow(new Object[]{entries[i][0], entries[i][2]});
+        }
+    }
 
 	private static byte[] readFromFile(String path) throws IOException {
 
@@ -108,7 +113,7 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 			else
 				slowMode = true;
 			if (online)
-				server.changeSlowMode(slowMode);
+				serverRunnable.changeSlowMode(slowMode);
 		}
 	}
 	
@@ -117,8 +122,8 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 		public void actionPerformed (ActionEvent event)
 		{
 			if (online){
-				server.running = false;
-				server.closeSocket();
+				serverRunnable.running = false;
+				serverRunnable.closeSocket();
 				server = null;
 				online = false;
 				console("Network Killed.");
@@ -135,9 +140,11 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 					//            ServerRunnable.changeSlowMode(slowMode);
 					//            Server = new Thread(ServerRunnable);
 					//            Server.start();
-					Entries database = new Entries();
-					server = new RDT(2010, ServerPanel.this, database, "server", slowMode);
-					server.run();
+					serverRunnable = new RDT(2010, ServerPanel.this, database, "server", false);
+                    serverRunnable.running = true;
+					server = new Thread(serverRunnable);
+
+                    server.start();
 					spawnNetwork.setText("Disable Network");
 					online = true;
 

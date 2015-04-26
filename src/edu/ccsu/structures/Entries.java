@@ -80,11 +80,12 @@ public class Entries {
      */
     public String[][] getEntries() {
         Set<String> keys = Database.keySet();
-        String[][] entries = new String[Database.size()][2];
+        String[][] entries = new String[Database.size()][3];
         int i = 0;
         for(String key: keys){
             entries[i][0] = key;
             entries[i][1] = String.valueOf(Database.get(key).getSize());
+            entries[i][2] = Database.get(key).getIp();
             i++;
         }
 
@@ -140,7 +141,12 @@ public class Entries {
          * Return the IP of a peer who has the file
          * @return IP of peer
          */
-        public String getIp() { return this.ip.get(0); }
+        public String getIp() {
+            if (this.ip.size() > 0)
+                return this.ip.get(0);
+            else
+                return null;
+        }
 
         /**
          * Return size of the file

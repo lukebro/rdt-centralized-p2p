@@ -14,8 +14,8 @@ public class ClientRDT implements ConsolePanel {
     public ClientRDT() throws IOException, InterruptedException {
 
 
-        database.addEntry("Bye bye bye.mp4", 1000);
-        database.addEntry("Hey.mp4", 2000);
+        database.addEntry("hedf.mp4", 1000);
+        database.addEntry("Hedfdy.mp4", 2000);
         database.addEntry("Welcome.mp4", 3000);
         database.addEntry("Hello world.mp4", 4000);
 
@@ -28,15 +28,6 @@ public class ClientRDT implements ConsolePanel {
 
 
         ok.start();
-
-
-
-        // when user clicks on request file Peer->makeRequest
-        this.console("Requesting a file name.");
-
-        String ip = client.rdtRequest("Hey.mp4", server);
-
-        System.out.println("Received IP:" + ip);
 
     }
 

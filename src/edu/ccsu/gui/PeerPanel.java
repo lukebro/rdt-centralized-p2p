@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -226,9 +227,11 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 					online = true;
 					networkJoinLeave.setText("Leave Network");
 					try {
-						InetAddress targetAddress = InetAddress.getByName(enterServerIP.getText());
+						InetSocketAddress targetAddress = new InetSocketAddress(enterServerIP.getText(), 2010);
 						client = new RDT(3010, PeerPanel.this, peer.getList(),"client", slowMode);
-						client.run();
+                        client.server = targetAddress;
+						Thread peerThread = new Thread(client);
+						peerThread.start();
 					} catch (Exception e1) {console("Could not connect to server");}
 				}
 			}

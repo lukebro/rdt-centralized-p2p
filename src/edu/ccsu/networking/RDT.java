@@ -47,11 +47,12 @@ public class RDT implements Runnable {
         socket = new DatagramSocket(this.ourPort);
     }
 
-    public RDT(int sendingPort, ConsolePanel panel) throws SocketException, UnknownHostException {
+    public RDT(int sendingPort, ConsolePanel panel, String mode) throws SocketException, UnknownHostException {
         this.slowMode = false;
         this.ourPort = sendingPort;
         this.panel = panel;
-        this.database = null;
+        this.database = new Entries();
+        this.mode = mode;
 
         socket = new DatagramSocket(this.ourPort);
     }
@@ -358,10 +359,10 @@ public class RDT implements Runnable {
 
         socket.receive(call);
 
-        if(slowMode)
-            socket.setSoTimeout(10000);
-        else
-            socket.setSoTimeout(20);
+        //if(slowMode)
+         //   socket.setSoTimeout(10000);
+        //else
+           // socket.setSoTimeout(20);
         processRequest(call);
     }
 
@@ -453,6 +454,8 @@ public class RDT implements Runnable {
 
 
                     rdtSend(allEntries.getBytes(), peer, "OK");
+
+                    panel.processEntries(ourEntries);
 
                     panel.console("# Sent all entries to peer.");
                 }

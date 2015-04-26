@@ -31,7 +31,7 @@ public class Peer implements Runnable {
 		while(true) {
 			try {
 				pp.console("Waiting for requests...");
-				requestSocket = new ServerSocket(1010).accept();
+				requestSocket = new ServerSocket(4010).accept();
 				takeRequest(requestSocket.getInetAddress(),requestSocket.getPort(),new BufferedReader(new InputStreamReader(requestSocket.getInputStream())).readLine());
 			} catch (IOException e1) {e1.printStackTrace();}
 		}
@@ -55,7 +55,7 @@ public class Peer implements Runnable {
         InetSocketAddress server = new InetSocketAddress("127.0.0.1", 2010);
 
         // will fail if other threads exist
-        RDT client = new RDT(3010, pp);
+        RDT client = new RDT(3010, pp, "client");
 
         String peerIp = client.rdtRequest(song, server);
 
@@ -137,7 +137,7 @@ public class Peer implements Runnable {
 		public void run() {
 			Socket peerSocket;
 			try {
-				peerSocket = new Socket(ip,1010);
+				peerSocket = new Socket(ip,3010);
 				byte[] packet = HttpUtil.buildPacket(HttpUtil.createRequestHeader("GET", song), null);
 				DataOutputStream request = new DataOutputStream(peerSocket.getOutputStream());
 				request.write(packet);
