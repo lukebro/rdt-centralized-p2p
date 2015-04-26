@@ -2,6 +2,7 @@ package edu.ccsu.gui;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -10,19 +11,23 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import edu.ccsu.networking.RDT;
 import edu.ccsu.networking.RDTClient;
 import edu.ccsu.networking.Peer;
 
 public class PeerPanel extends JPanel implements ConsolePanel {
 
-	private JPanel northGrid, networkGrid,remoteBorder,remoteSouth, localBox, centerGrid;
+	private JPanel northGrid, connectionGrid, networkGrid,remoteBorder,remoteSouth, localBox, centerGrid;
 	
 	private JRadioButton normal, slow;
 	private boolean slowMode = false;
 	
-	private JLabel serverLabel = new JLabel("Directory IP: ");
+	private JLabel serverLabel = new JLabel("Directory IP:");
 	private JTextField enterServerIP = new JTextField();
+	Pattern p = Pattern.compile("[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}");
 	
 	private JButton chooseShareFolder, networkJoinLeave, downloadFiles, queryServer;
 	
@@ -70,16 +75,20 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 		networkGrid = new JPanel();
 		networkGrid.setLayout(new GridLayout(1, 4));
 		networkGrid.setBorder(BorderFactory.createTitledBorder("Network Settings"));
-		networkGrid.add(serverLabel);
-		networkGrid.add(enterServerIP);
 		networkGrid.add(normal);
 		networkGrid.add(slow);
+		networkGrid.add(serverLabel);
+		networkGrid.add(enterServerIP);
+		
+		connectionGrid = new JPanel();
+		connectionGrid.setLayout(new GridLayout(2, 1));
+		connectionGrid.add(networkGrid);
+		connectionGrid.add(networkJoinLeave);
 		
 		northGrid = new JPanel();
-		northGrid.setLayout(new GridLayout(2, 2));
+		northGrid.setLayout(new GridLayout(1,2));
 		northGrid.setBorder(BorderFactory.createTitledBorder("Application Setup"));
-		northGrid.add(networkGrid);
-		northGrid.add(networkJoinLeave);
+		northGrid.add(connectionGrid);
 		northGrid.add(chooseShareFolder);
 
 		add(northGrid, BorderLayout.NORTH);
@@ -176,9 +185,12 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 
 	private class PeerListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			if (!peer.folderSet()){
-				console("PLEASE SELECT A FOLDER TO SHARE");
-			}
+
+			Matcher m = p.matcher(enterServerIP.getText());
+			boolean validIP = m.matches();
+
+			if (!peer.folderSet()){console("PLEASE SELECT A FOLDER TO SHARE");}
+			else if (!validIP){console("Invalid server address");}
 			else{
 				pt.start();
 				if(slowMode = true) {
@@ -194,19 +206,16 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 				else{	
 					online = true;
 					networkJoinLeave.setText("Leave Network");
-					InetAddress targetAddress;
 					try {
-						targetAddress = InetAddress.getByName("127.0.0.1");//Update to server IP
-						RDTClient client = new RDTClient(targetAddress, slowMode);
-						//RDT Client should compile file list and send it to directory server
-						//then populate remoteFileList with response
-						// Will the server send updated list to other peers when new peer joins?
-						client.rdtRequest("data.txt");//remove?
-					} catch (Exception e1) {e1.printStackTrace();}
+						InetAddress targetAddress = InetAddress.getByName(enterServerIP.getText());
+						RDT client = new RDT(3010, PeerPanel.this, peer.getList(),"client");
+						client.run();
+					} catch (Exception e1) {console("Could not connect to server");}
 				}
 			}
 		}
 	}
+	
 
 	private class SelectionListener implements ActionListener {
 		public void actionPerformed(ActionEvent e){

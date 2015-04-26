@@ -22,6 +22,10 @@ public class Peer implements Runnable {
 	public Peer(PeerPanel pp) {
 		this.pp = pp;
 	}
+	
+	public Entries getList(){
+		return fileList;
+	}
 
 	public void run() {
 		while(true) {

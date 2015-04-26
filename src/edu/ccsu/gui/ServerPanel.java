@@ -1,9 +1,12 @@
 package edu.ccsu.gui;
 
+import edu.ccsu.networking.RDT;
 import edu.ccsu.networking.RDTServer;
+import edu.ccsu.structures.Entries;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -117,11 +120,12 @@ public class ServerPanel extends JPanel implements ConsolePanel {
             }
 
         try {
-            ServerRunnable.changeSlowMode(slowMode);
-
-            Server = new Thread(ServerRunnable);
-
-            Server.start();
+//            ServerRunnable.changeSlowMode(slowMode);
+//            Server = new Thread(ServerRunnable);
+//            Server.start();
+        	Entries database = new Entries();
+        	RDT server = new RDT(2010, ServerPanel.this, database, "server");
+        	server.run();
 
         } catch(Exception e) {
             e.printStackTrace();
