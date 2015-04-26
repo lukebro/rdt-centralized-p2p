@@ -18,7 +18,7 @@ public class RDT implements Runnable {
     private byte[] data = null;
     private ConsolePanel panel;
     private Entries database;
-    public String mode = "client";
+    private String mode;
     public boolean running = true;
     public InetSocketAddress server;
 
@@ -37,11 +37,12 @@ public class RDT implements Runnable {
      * @throws SocketException
      * @throws UnknownHostException
      */
-    public RDT(int sendingPort, ConsolePanel panel, Entries database) throws SocketException, UnknownHostException {
+    public RDT(int sendingPort, ConsolePanel panel, Entries database, String mode) throws SocketException, UnknownHostException {
         this.slowMode = false;
         this.ourPort = sendingPort;
         this.panel = panel;
         this.database = database;
+        this.mode = mode;
 
         socket = new DatagramSocket(this.ourPort);
     }

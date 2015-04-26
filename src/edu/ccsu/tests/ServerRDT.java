@@ -13,8 +13,7 @@ public class ServerRDT implements ConsolePanel {
     public ServerRDT() throws IOException, InterruptedException {
 
 
-        RDT server = new RDT(2010, this, database);
-        server.mode = "server";
+        RDT server = new RDT(2010, this, database, "server");
         Thread ok = new Thread(server);
 
         ok.start();
