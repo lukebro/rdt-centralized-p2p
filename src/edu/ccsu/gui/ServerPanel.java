@@ -18,14 +18,16 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 
 	private JPanel northGrid = new JPanel();
 	private JRadioButton normal, slow;
-	private JButton spawnNetwork = new JButton ("Enable Server In Selected Mode");
+	private JButton spawnNetwork = new JButton ("Enable Network");
 	private boolean slowMode = false;
 	private JPanel centerGrid = new JPanel();
 	private DefaultTableModel model = new DefaultTableModel();
 	private JTable table = new JTable(model){public boolean isCellEditable(int row, int col){return false;}};
 	private JScrollPane contentScroll, activityScroll;
-    private static Thread Server;
-    private static RDTServer ServerRunnable;
+    //private static Thread Server;
+   // private static RDTServer ServerRunnable;
+	private RDT server;
+	private boolean online = false;
 
 	private JTextArea activity;
 
@@ -74,7 +76,7 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 		activityScroll = new JScrollPane(activity);
 		add (activityScroll, BorderLayout.SOUTH);
 
-        ServerRunnable = new RDTServer(this);
+        //ServerRunnable = new RDTServer(this);
 	}
 
 	public void console(String message){
@@ -105,33 +107,44 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 				slowMode = false;
 			else
 				slowMode = true;
+			if (online)
+				server.changeSlowMode(slowMode);
 		}
 	}
 	
 
 	private class NetworkListener implements ActionListener {
-        public void actionPerformed (ActionEvent event)
-        {
-        // Parse argument, and set Slow Mode to true if -slow is passed
-            if(slowMode == true) {
-                console("Server starting in slow mode...");
-            } else {
-                console("Server starting...");
-            }
+		public void actionPerformed (ActionEvent event)
+		{
+			if (online){
+				server.running = false;
+				server.closeSocket();
+				server = null;
+				online = false;
+				console("Network Killed.");
+				spawnNetwork.setText("Network Disabled.");
+			}
+			else {
+				// Parse argument, and set Slow Mode to true if -slow is passed
+				if(slowMode == true) {
+					console("Server starting in slow mode...");
+				} else {
+					console("Server starting...");}
 
-        try {
-//            ServerRunnable.changeSlowMode(slowMode);
-//            Server = new Thread(ServerRunnable);
-//            Server.start();
-        	Entries database = new Entries();
-        	RDT server = new RDT(2010, ServerPanel.this, database, "server");
-        	server.run();
+				try {
+					//            ServerRunnable.changeSlowMode(slowMode);
+					//            Server = new Thread(ServerRunnable);
+					//            Server.start();
+					Entries database = new Entries();
+					server = new RDT(2010, ServerPanel.this, database, "server", slowMode);
+					server.run();
+					spawnNetwork.setText("Disable Network");
+					online = true;
 
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-        }
-    }
+				} catch(Exception e) {console("There was an error starting the network.");}
+			}
+		}
+	}
 
 }
 

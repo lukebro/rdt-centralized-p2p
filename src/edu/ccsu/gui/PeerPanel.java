@@ -42,10 +42,9 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 	private File[] myFiles;
 	private Peer peer;
 	private Thread pt;
+	private RDT client;
 	
 	private boolean online = false;
-
-    public void processEntries(String[][] entries) {}
 
 	public PeerPanel() {
 	
@@ -137,8 +136,6 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 
 		add(activityScroll, BorderLayout.SOUTH);
 		
-		remoteModel.addRow(new Object[]{"My file", 1000});
-		
 	}
 	
 	public void console(String message){
@@ -148,6 +145,12 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 	
 	public void listMyFiles(){
 		peer.removeFiles();
+		int count = localModel.getRowCount();
+		if (count > 0){
+			for (int i = count-1; i >= 0; i--){
+				localModel.removeRow(i);
+			}
+		}
 		File folder = fileChooser.getSelectedFile();
 		peer.setFolder(folder.getAbsolutePath());
 		console(folder.getAbsolutePath() + " set as Shared Directory");
@@ -158,7 +161,21 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 				peer.addFile(file.getName(),file.length());
 			} catch (UnknownHostException e1) {e1.printStackTrace();}
 		}
+		console(Objects.toString(localModel.getRowCount()));
 	}
+
+    public void processEntries(String[][] entries) {
+    	int count = remoteModel.getRowCount();
+		if (count > 0){
+			for (int i = count-1; i >= 0; i--){
+				remoteModel.removeRow(i);
+			}
+		}
+    	
+    	for(int i = 0; i < entries.length; i++) {
+    		remoteModel.addRow(new Object[]{entries[i][0],entries[i][1]});
+    		}
+    }
 
 
 	private class ModeListener implements ActionListener {
@@ -171,6 +188,8 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 				slowMode = false;
 			else
 				slowMode = true;
+			if (online)
+				client.changeSlowMode(slowMode);
 		}
 	}
 	
@@ -208,7 +227,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 					networkJoinLeave.setText("Leave Network");
 					try {
 						InetAddress targetAddress = InetAddress.getByName(enterServerIP.getText());
-						RDT client = new RDT(3010, PeerPanel.this, peer.getList(),"client");
+						client = new RDT(3010, PeerPanel.this, peer.getList(),"client", slowMode);
 						client.run();
 					} catch (Exception e1) {console("Could not connect to server");}
 				}

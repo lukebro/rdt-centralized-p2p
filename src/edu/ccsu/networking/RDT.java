@@ -37,8 +37,8 @@ public class RDT implements Runnable {
      * @throws SocketException
      * @throws UnknownHostException
      */
-    public RDT(int sendingPort, ConsolePanel panel, Entries database, String mode) throws SocketException, UnknownHostException {
-        this.slowMode = false;
+    public RDT(int sendingPort, ConsolePanel panel, Entries database, String mode, boolean slowMode) throws SocketException, UnknownHostException {
+        this.slowMode = slowMode;
         this.ourPort = sendingPort;
         this.panel = panel;
         this.database = database;
@@ -59,9 +59,10 @@ public class RDT implements Runnable {
 
     public void changeSlowMode(boolean mode) {
         this.slowMode = mode;
+        this.panel.console("Slow mode = " + mode);
     }
 
-    private void closeSocket(){
+    public void closeSocket(){
         if (socket!=null){
             socket.close();
         }
@@ -476,14 +477,10 @@ public class RDT implements Runnable {
         } else if(this.mode.equals("server")){
 
             while (running) {
-                this.changeSlowMode(true);
                 try {
                     this.waitFromBelow();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                } catch (IOException e) {e.printStackTrace();}
+                  catch (InterruptedException e) {e.printStackTrace();}
 
             }
         }

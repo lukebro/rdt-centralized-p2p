@@ -20,7 +20,7 @@ public class ClientRDT implements ConsolePanel {
         database.addEntry("Hello world.mp4", 4000);
 
 
-        RDT client = new RDT(3010, this, database, "client");
+        RDT client = new RDT(3010, this, database, "client", false);
         client.changeSlowMode(true);
         InetSocketAddress server = new InetSocketAddress("127.0.0.1", 2010);
         client.server = server;
