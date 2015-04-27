@@ -123,6 +123,13 @@ public class Peer implements Runnable {
 
             byte[] request = HttpUtil.createRequestHeader("GET", this.song);
 
+            FileOutputStream fileO = null;
+            try {
+                fileO = new FileOutputStream(new File(shareFolder + "/../downloads/" + song));
+            } catch (FileNotFoundException e) {
+
+            }
+
             try {
                 output.write(request);
             } catch (IOException e) {
@@ -132,10 +139,13 @@ public class Peer implements Runnable {
             byte[] buffer = new byte[2048];
             String data = "";
             int i;
+            ByteArrayOutputStream test = new ByteArrayOutputStream();
+
+
 
             try {
                 while ((i = input.read(buffer)) != -1) {
-                    data += new String(buffer);
+                    fileO.write(buffer);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -147,14 +157,6 @@ public class Peer implements Runnable {
                 e.printStackTrace();
             }
 
-            byte[] byteData = HttpUtil.getData(data.getBytes());
-
-            try {
-                FileOutputStream output = new FileOutputStream(new File(shareFolder + "/../downloads/" + song));
-                output.write(byteData);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
 
 
         }
@@ -192,15 +194,16 @@ public class Peer implements Runnable {
 
             String fileName = packetInfo[1];
 
-            byte[] header = HttpUtil.createResponseHeader("OK", "202");
+            //byte[] header = HttpUtil.createResponseHeader("OK", "202");
 
             if (Paths.get(shareFolder +"/" + fileName).isAbsolute()) {
                 byte[] data = copyFile(fileName);
 
-                byte[] responsePacket = HttpUtil.buildPacket(header,data);
+                //byte[] responsePacket = HttpUtil.buildPacket(header,data);
 
                 try {
-                    output.write(responsePacket);
+                    //output.write(responsePacket);
+                    output.write(data);
                     output.flush();
                     peerSocket.close();
                 } catch (IOException e) { e.printStackTrace(); }
