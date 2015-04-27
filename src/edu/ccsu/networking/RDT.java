@@ -21,6 +21,7 @@ public class RDT implements Runnable {
     private String mode;
     public boolean running = true;
     public InetSocketAddress server;
+    public int timeout = 0;
 
     /**
      * Methods of our HTTP protocol
@@ -59,6 +60,15 @@ public class RDT implements Runnable {
         socket.setSoTimeout(0);
     }
 
+    public void doubleTimeout() throws SocketException {
+        this.timeout = this.timeout * 2;
+        socket.setSoTimeout(this.timeout);
+    }
+
+    public void doubleTimein() throws SocketException {
+        this.timeout = this.timeout / 2;
+        socket.setSoTimeout(this.timeout);
+    }
 
     public void changeSlowMode(boolean mode) {
         this.slowMode = mode;
@@ -81,17 +91,22 @@ public class RDT implements Runnable {
         int previousSeq = 1;
         int currentSeq;
 
+        if (slowMode)
+            panel.console("Slow mode is enabled.");
+
         while (waiting) {
 
             // Create new packet for receiving data
             byte[] data = new byte[packetSize];
             DatagramPacket packet = new DatagramPacket(data, data.length);
 
-            if (slowMode)
-                panel.console("Slow mode is enabled.");
 
             // wait to receive packet
             socket.receive(packet);
+
+            if(slowMode) {
+                System.out.println("Packet received...");
+            }
 
             SocketAddress receiver = packet.getSocketAddress();
 
@@ -156,6 +171,15 @@ public class RDT implements Runnable {
         // Create a InputStream to easily split up byte[] into smaller packets
         ByteArrayInputStream byteStream = new ByteArrayInputStream(data);
 
+        if(slowMode) {
+            this.timeout = 7000;
+
+        } else {
+            this.timeout = 500;
+        }
+
+        socket.setSoTimeout(this.timeout);
+
         int packetNumber = 0;
         int seq = 0;
         boolean waiting;
@@ -206,11 +230,9 @@ public class RDT implements Runnable {
             byte[] builtPacket = HttpUtil.buildPacket(packetHeader, packetData);
 
             if(slowMode) {
-                panel.console("# Sending packet #" + packetNumber + " of size " + builtPacket.length + " in 5 seconds");
-                Thread.sleep(5000);
-            }// else {
-               // panel.console("# Sending packet #" + packetNumber + " of size " + builtPacket.length);
-            //}
+                panel.console("# Sending packet #" + packetNumber + " of size " + builtPacket.length + " in 3 seconds.");
+                Thread.sleep(3000);
+            }
 
             // Create a DatagramPacket with data builtPacket
             DatagramPacket packet = new DatagramPacket(builtPacket, builtPacket.length, receiver);
@@ -228,12 +250,15 @@ public class RDT implements Runnable {
                 DatagramPacket getACK = new DatagramPacket(ack, ack.length);
 
                 try {
-                    //panel.console("# Waiting for ACK for packet #" + packetNumber + " with seq #" + seq);
+                    System.out.println("# Waiting for ACK for packet #" + packetNumber + " with seq #" + seq);
 
                     // Wait to receive ACK
                     socket.receive(getACK);
 
 
+                    if (slowMode) {
+                        System.out.println("Received an ACK processing ACK...");
+                    }
                     // put received packet into receivingPacket byte[]
                     byte[] receivingPacket = Arrays.copyOf(getACK.getData(), getACK.getLength());
 
@@ -242,22 +267,24 @@ public class RDT implements Runnable {
                         int getSeq = HttpUtil.getSeq(receivingPacket);
 
                         // compare sequence numbers to see if correct ACK received
-                        if(getSeq != seq) {
-                            //panel.console("# Received ACK with seq #" + getSeq + ", wrong seq number.");
+                        if (getSeq != seq) {
+                            System.out.println("# Received ACK with seq #" + getSeq + ", wrong seq number.");
+                            doubleTimein();
                             continue;
                         } else {
-                            //panel.console("# Received ACK with seq #" + getSeq + ", correct seq number.");
+                            System.out.println("# Received ACK with seq #" + getSeq + ", correct seq number.");
                             seq = (seq == 0)? 1 : 0;
                             packetNumber++;
                             waiting = false;
                             break;
                         }
                     } else {
-                        //panel.console("# Received a packet that is not an ACK. Throwing it out.");
+                        System.out.println("# Received a packet that is not an ACK. Throwing it out.");
                     }
                 } catch (SocketTimeoutException e) {
                     // Runs when socket times out waiting for an ACK
-                    //panel.console("# Timed out waiting for ACK for packet #" + packetNumber + ". Sending again.");
+                    System.out.println("# Timed out waiting for ACK for packet #" + packetNumber + ". Sending again.");
+                    doubleTimeout();
                     continue;
                 }
             }
@@ -267,7 +294,6 @@ public class RDT implements Runnable {
         //panel.console("# Done sending.");
     }
 
-
     /**
      * Client attempt to join a network
      * @throws IOException
@@ -275,6 +301,7 @@ public class RDT implements Runnable {
      */
     public void rdtPost() throws IOException, InterruptedException {
 
+        socket.setSoTimeout(0);
         // Create a request for the file, assume it's going to get there
         byte[] request = HttpUtil.createRequestHeader("POST", "join");
 
@@ -349,6 +376,8 @@ public class RDT implements Runnable {
 
         try {
 
+            socket.setSoTimeout(0);
+
             panel.console("Waiting for request...");
 
             socket.receive(call);
@@ -370,6 +399,8 @@ public class RDT implements Runnable {
      */
     public String rdtRequest(String song, InetSocketAddress receiver) throws IOException, InterruptedException {
 
+
+        socket.setSoTimeout(0);
         // Create a request for the file, assume it's going to get there
         byte[] request = HttpUtil.createRequestHeader("REQUEST", song);
 
