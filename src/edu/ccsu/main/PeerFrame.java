@@ -7,7 +7,7 @@ public class PeerFrame {
 
 	public static void main(String[] args) {
 
-		JFrame frame = new JFrame ("CS 490 Peer");
+		JFrame frame = new JFrame ("Napster Client");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		PeerPanel panel = new PeerPanel();

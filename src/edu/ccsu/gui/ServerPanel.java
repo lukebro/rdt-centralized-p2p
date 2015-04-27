@@ -55,7 +55,7 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 		northGrid.add(slow);
 		northGrid.add(Box.createRigidArea(new Dimension (50,0)));
 		northGrid.add(spawnNetwork);
-		northGrid.setBorder(BorderFactory.createTitledBorder("Transport Speed"));
+		northGrid.setBorder(BorderFactory.createTitledBorder("Server Mode"));
 		add(northGrid, BorderLayout.NORTH);
 
 		model.addColumn("File");
@@ -69,7 +69,7 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 		centerGrid.setBorder(BorderFactory.createTitledBorder("Network Content"));
 		add(centerGrid, BorderLayout.CENTER);
 
-		activity =  new JTextArea("System Ready\n",5,20);
+		activity =  new JTextArea("Server is ready to start.\nPress \"Enabled Network\" to start server.\n",5,20);
         activity.setEditable(false);
 		activityScroll = new JScrollPane(activity);
 		add (activityScroll, BorderLayout.SOUTH);
@@ -126,15 +126,17 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 				serverRunnable.closeSocket();
 				server = null;
 				online = false;
-				console("Network Killed.");
-				spawnNetwork.setText("Network Disabled.");
+				console("Server is shutting down.");
+				spawnNetwork.setText("Enable Network");
+                model.setNumRows(0);
+                database.destroy();
 			}
 			else {
 				// Parse argument, and set Slow Mode to true if -slow is passed
 				if(slowMode == true) {
-					console("Server starting in slow mode...");
+					console("Server starting up in slow mode.");
 				} else {
-					console("Server starting...");}
+					console("Server starting up.");}
 
 				try {
 					//            ServerRunnable.changeSlowMode(slowMode);

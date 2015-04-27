@@ -9,7 +9,7 @@ public class ServerFrame {
 
 	public static void main (String[] args) throws SocketException, UnknownHostException {
 		
-		JFrame frame = new JFrame ("CS 490 Directory Server");
+		JFrame frame = new JFrame ("Napster Server");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		ServerPanel panel = new ServerPanel();

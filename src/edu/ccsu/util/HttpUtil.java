@@ -98,10 +98,6 @@ public class HttpUtil {
             return createRequestHeader(method, param, null);
         }
 
-        public static byte[] createRequestHeader(String method) {
-            return createRequestHeader(method, null, null);
-        }
-
     /*
      * Parses header of request packet
      * @param HTTP packet in form of byte[]

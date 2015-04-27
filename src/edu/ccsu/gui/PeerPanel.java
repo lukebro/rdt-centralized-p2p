@@ -27,15 +27,15 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 	private boolean slowMode = false;
 	
 	private JLabel serverLabel = new JLabel("Directory IP:");
-	private JTextField enterServerIP = new JTextField();
+	public JTextField enterServerIP = new JTextField();
 	Pattern p = Pattern.compile("[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}");
 	
 	private JButton chooseShareFolder, networkJoinLeave, downloadFiles, queryServer;
 	
 	private DefaultTableModel remoteModel = new DefaultTableModel();
 	private DefaultTableModel localModel = new DefaultTableModel();
-	private JTable remoteTable = new JTable(remoteModel){public boolean isCellEditable(int row, int col){return false;}};
-	private JTable localTable = new JTable(localModel){public boolean isCellEditable(int row, int col){return false;}};
+	private JTable remoteTable = new JTable(remoteModel){ public boolean isCellEditable(int row, int col) { return false; } };
+	private JTable localTable = new JTable(localModel){ public boolean isCellEditable(int row, int col) { return false; } };
 	private JTextArea activity;
 	private JScrollPane remoteScroll, localScroll, activityScroll;
 	
@@ -154,7 +154,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 		}
 		File folder = fileChooser.getSelectedFile();
 		peer.setFolder(folder.getAbsolutePath());
-		console(folder.getAbsolutePath() + " set as Shared Directory");
+		console("\"" + folder.getAbsolutePath() + "\" set as Shared Directory.");
 		myFiles = folder.listFiles();
 		for(File file : myFiles){
 			localModel.addRow(new Object[]{file.getName(),file.length()});
@@ -162,7 +162,6 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 				peer.addFile(file.getName(),file.length());
 			} catch (UnknownHostException e1) {e1.printStackTrace();}
 		}
-		console(Objects.toString(localModel.getRowCount()));
 	}
 
     public void processEntries(String[][] entries) {
@@ -185,22 +184,28 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 		{
 			Object source = event.getSource();
 
-			if (source == normal)
-				slowMode = false;
-			else
-				slowMode = true;
-			if (online)
-				client.changeSlowMode(slowMode);
+			if (source == normal) {
+                slowMode = false;
+            } else {
+                slowMode = true;
+            }
+
+			if (online) {
+                client.changeSlowMode(slowMode);
+            }
 		}
 	}
 	
 	private class FileListener implements ActionListener {
+
 		public void actionPerformed(ActionEvent e) {
+
 			int returnVal = fileChooser.showOpenDialog(new JFrame());
+
 			if (returnVal == JFileChooser.APPROVE_OPTION)
 				listMyFiles();
-			 else {}
 		}
+
 	}
 
 	private class PeerListener implements ActionListener {
@@ -209,30 +214,50 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 			Matcher m = p.matcher(enterServerIP.getText());
 			boolean validIP = m.matches();
 
-			if (!peer.folderSet()){console("PLEASE SELECT A FOLDER TO SHARE");}
-			else if (!validIP){console("Invalid server address");}
-			else{
-				pt.start();
-				if(slowMode = true) {
-					console("Client starting in slow mode...");
-				} else {
-					console("Client starting...");
-				}
+			if(!peer.folderSet()) {
+
+                console("Please select a folder of files first.");
+
+            } else if (!validIP){
+
+                console("Invalid server address.");
+
+            } else {
 				if (online){
-					try {peer.leaveNetwork();} catch (IOException e1) {e1.printStackTrace();}
+
+					try {
+                        peer.leaveNetwork();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+
 					online = false;
 					networkJoinLeave.setText("Join Network");
-				}
-				else{	
+                    enterServerIP.setEditable(true);
+
+				} else {
+
+					if(slowMode = true) {
+						console("Client starting in slow mode...");
+					} else {
+						console("Client starting...");
+					}
+                    pt.start();
 					online = true;
 					networkJoinLeave.setText("Leave Network");
+                    enterServerIP.setEditable(false);
+
 					try {
+
 						InetSocketAddress targetAddress = new InetSocketAddress(enterServerIP.getText(), 2010);
 						client = new RDT(3010, PeerPanel.this, peer.getList(),"client", slowMode);
                         client.server = targetAddress;
 						Thread peerThread = new Thread(client);
 						peerThread.start();
-					} catch (Exception e1) {console("Could not connect to server");}
+
+					} catch (Exception e1) {
+                        console("Could not connect to server.");
+                    }
 				}
 			}
 		}
@@ -240,27 +265,33 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 	
 
 	private class SelectionListener implements ActionListener {
+
 		public void actionPerformed(ActionEvent e){
-			if (!online){
-				console("You must join the network before requesting files.");
-			}
-			else {
-				if (remoteTable.getRowCount() == 0)
-					console("No files available for download");
-				else {
+
+			if(!online) {
+
+				console("You must join the network before requesting files silly!");
+
+			} else {
+
+				if (remoteTable.getRowCount() == 0) {
+
+                    console("No files available for download.");
+
+                } else {
+
 					int row;
 					String file;
+
 					try {
-						row = remoteTable.getSelectedRows()[0];
-						file = Objects.toString(remoteTable.getValueAt(row, 0));
-						console("Requesting " + file);
-						peer.makeRequest(file);
-					}
-					catch(ArrayIndexOutOfBoundsException e1) {console("Please select a file");}
-					catch (ConnectException e1) {e1.printStackTrace();}
-					catch (UnknownHostException e1) {e1.printStackTrace();}
-					catch (IOException e1) {e1.printStackTrace();} catch (InterruptedException e1) {
-                        e1.printStackTrace();
+
+                        row = remoteTable.getSelectedRows()[0];
+                        file = Objects.toString(remoteTable.getValueAt(row, 0));
+                        console("Asking the server for a peer with the file \"" + file + "\".");
+                        peer.makeRequest(file);
+
+                    } catch(Exception ex) {
+                        ex.printStackTrace();
                     }
                 }
 			}

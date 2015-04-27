@@ -60,7 +60,6 @@ public class RDT implements Runnable {
 
     public void changeSlowMode(boolean mode) {
         this.slowMode = mode;
-        this.panel.console("Slow mode = " + mode);
     }
 
     public void closeSocket(){
@@ -257,7 +256,7 @@ public class RDT implements Runnable {
                             break;
                         }
                     } else {
-                        System.out.println("# Received a packet that is not an ACK. Throwing it out.");
+                        panel.console("# Received a packet that is not an ACK. Throwing it out.");
                     }
                 } catch (SocketTimeoutException e) {
                     // Runs when socket times out waiting for an ACK
@@ -292,8 +291,6 @@ public class RDT implements Runnable {
 
         byte[] data =  entries.getBytes();
 
-        panel.console("# Sending data " + new String(data));
-
         DatagramPacket requestPacket = new DatagramPacket(request, request.length, this.server);
 
         panel.console("# Sending request to join network.");
@@ -316,6 +313,8 @@ public class RDT implements Runnable {
         panel.processEntries(allEntries2);
 
         panel.console("# Entries updated.");
+
+        closeSocket();
     }
 
     /**
@@ -349,21 +348,24 @@ public class RDT implements Runnable {
      * @throws IOException
      * @throws InterruptedException
      */
-    public void waitFromBelow() throws IOException, InterruptedException {
+    public void waitFromBelow() {
         byte[] callData = new byte[packetSize];
         DatagramPacket call = new DatagramPacket(callData, callData.length);
 
-        socket.setSoTimeout(0);
+        try {
+            socket.setSoTimeout(0);
 
-        panel.console("@ Server waiting for a request...");
+            panel.console("@ Server waiting for a request...");
 
-        socket.receive(call);
+            socket.receive(call);
 
-        //if(slowMode)
-         //   socket.setSoTimeout(10000);
-        //else
-           // socket.setSoTimeout(20);
-        processRequest(call);
+            //if(slowMode)
+            //   socket.setSoTimeout(10000);
+            //else
+            // socket.setSoTimeout(20);
+            processRequest(call);
+
+        } catch(Exception e) {}
     }
 
     /**
@@ -392,11 +394,11 @@ public class RDT implements Runnable {
 
         String[] packetInfo = HttpUtil.parseResponseHeader(builtPacket);
 
-        String name = HttpUtil.parseFields(packetInfo[2])[0][1];
+        String ip = HttpUtil.parseFields(packetInfo[2])[0][1];
 
         closeSocket();
 
-        return name;
+        return ip;
     }
 
     /**
@@ -465,8 +467,6 @@ public class RDT implements Runnable {
 
         }
 
-        database.printAllEntries();
-
     }
 
     public void run() {
@@ -480,11 +480,7 @@ public class RDT implements Runnable {
         } else if(this.mode.equals("server")){
 
             while (running) {
-                try {
                     this.waitFromBelow();
-                } catch (IOException e) {e.printStackTrace();}
-                  catch (InterruptedException e) {e.printStackTrace();}
-
             }
         }
     }
