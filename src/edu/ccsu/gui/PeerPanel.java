@@ -109,6 +109,8 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 		SelectionListener selectListnr = new SelectionListener();
 		downloadFiles.addActionListener(selectListnr);
 		queryServer = new JButton("Sync with Directory");
+		SyncListener syncListnr = new SyncListener();
+		queryServer.addActionListener(syncListnr);
 		remoteSouth = new JPanel();
 		remoteSouth.setLayout(new GridLayout(1,2));
 		remoteSouth.add(downloadFiles);
@@ -300,6 +302,22 @@ public class PeerPanel extends JPanel implements ConsolePanel {
                         ex.printStackTrace();
                     }
                 }
+			}
+		}
+	}
+	
+	private class SyncListener implements ActionListener {
+		public void actionPerformed(ActionEvent e){
+			if (!online)
+				console("Join network before attempting to sync");
+			else {
+				try {
+					InetSocketAddress targetAddress = new InetSocketAddress(enterServerIP.getText(), 2010);
+					client = new RDT(3010, PeerPanel.this, peer.getList(), "client", slowMode);
+                    client.server = targetAddress;
+					Thread peerThread = new Thread(client);
+					peerThread.start();
+				} catch (Exception e1){console("Could not connect to server.");}
 			}
 		}
 	}
