@@ -78,6 +78,7 @@ public class RDT implements Runnable {
             panel.console("Slow mode disabled.");
         }
     }
+    
 
     public void closeSocket(){
         if (socket!=null){
