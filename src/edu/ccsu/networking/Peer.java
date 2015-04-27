@@ -41,11 +41,9 @@ public class Peer implements Runnable {
         while(requester) {
 			try {
 
-				pp.console("Waiting for requests...");
-
                 Socket clientSocket = this.serverSocket.accept();
 
-                pp.console("Connection found, creating new thread and passing the socket over.");
+                pp.console("Got a request, spawning new thread to let peer download file!");
 
                 // Start new thread and pass socket to peer server = WOOOOOOOOOOOOOHOOOOOO bkz i finally figure it out
                 new Thread(new PeerServer(clientSocket)).start();
@@ -70,10 +68,14 @@ public class Peer implements Runnable {
 	public void makeRequest (String song) throws IOException, InterruptedException {
         byte[] header = HttpUtil.createRequestHeader("REQUEST", song);
 
+        pp.console("Asking server who has the file: \"" + song + "\".");
+
         RDT server = new RDT(3010, pp, this.getList(), "client", false);
         InetSocketAddress serverAddress = new InetSocketAddress(pp.enterServerIP.getText(), 2010);
 
         String ip = server.rdtRequest(song, serverAddress);
+
+        pp.console("Asking " + ip + " for the file \"" + song + "\".");
 
         new Thread(new PeerClient(ip, song)).start();
 	}
@@ -137,16 +139,21 @@ public class Peer implements Runnable {
             }
 
             byte[] buffer = new byte[2048];
-            String data = "";
-            int i;
-            ByteArrayOutputStream test = new ByteArrayOutputStream();
 
-
+            pp.console("Downloading file \"" + this.song + "\" from " + this.ip + ".");
 
             try {
+                int i = input.read(buffer);
+
+                // Get rid of header
+                byte[] header = HttpUtil.getData(buffer);
+
+                fileO.write(header);
+
                 while ((i = input.read(buffer)) != -1) {
                     fileO.write(buffer);
                 }
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -157,7 +164,7 @@ public class Peer implements Runnable {
                 e.printStackTrace();
             }
 
-
+            pp.console("File \"" + this.song + "\" has finished downloading, it's in your downloads.");
 
         }
 
@@ -194,16 +201,17 @@ public class Peer implements Runnable {
 
             String fileName = packetInfo[1];
 
-            //byte[] header = HttpUtil.createResponseHeader("OK", "202");
+            pp.console("Sending \"" + fileName + "\" to client.");
+
+            byte[] header = HttpUtil.createResponseHeader("OK", "202");
 
             if (Paths.get(shareFolder +"/" + fileName).isAbsolute()) {
                 byte[] data = copyFile(fileName);
 
-                //byte[] responsePacket = HttpUtil.buildPacket(header,data);
+                byte[] responsePacket = HttpUtil.buildPacket(header,data);
 
                 try {
-                    //output.write(responsePacket);
-                    output.write(data);
+                    output.write(responsePacket);
                     output.flush();
                     peerSocket.close();
                 } catch (IOException e) { e.printStackTrace(); }

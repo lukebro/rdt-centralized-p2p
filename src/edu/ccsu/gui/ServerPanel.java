@@ -112,6 +112,7 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 				slowMode = false;
 			else
 				slowMode = true;
+
 			if (online)
 				serverRunnable.changeSlowMode(slowMode);
 		}
@@ -126,6 +127,7 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 				serverRunnable.closeSocket();
 				server = null;
 				online = false;
+                activity.setText(null);
 				console("Server is shutting down.");
 				spawnNetwork.setText("Enable Network");
                 model.setNumRows(0);
@@ -139,10 +141,7 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 					console("Server starting up.");}
 
 				try {
-					//            ServerRunnable.changeSlowMode(slowMode);
-					//            Server = new Thread(ServerRunnable);
-					//            Server.start();
-					serverRunnable = new RDT(2010, ServerPanel.this, database, "server", false);
+					serverRunnable = new RDT(2010, ServerPanel.this, database, "server", slowMode);
                     serverRunnable.running = true;
 					server = new Thread(serverRunnable);
 

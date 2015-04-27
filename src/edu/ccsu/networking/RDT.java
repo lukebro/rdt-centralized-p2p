@@ -45,21 +45,28 @@ public class RDT implements Runnable {
         this.mode = mode;
 
         socket = new DatagramSocket(this.ourPort);
+        socket.setSoTimeout(0);
     }
 
-    public RDT(int sendingPort, ConsolePanel panel, String mode) throws SocketException, UnknownHostException {
-        this.slowMode = false;
+    public RDT(int sendingPort, ConsolePanel panel, String mode, boolean slowMode) throws SocketException, UnknownHostException {
+        this.slowMode = slowMode;
         this.ourPort = sendingPort;
         this.panel = panel;
         this.database = new Entries();
         this.mode = mode;
 
         socket = new DatagramSocket(this.ourPort);
+        socket.setSoTimeout(0);
     }
 
 
     public void changeSlowMode(boolean mode) {
         this.slowMode = mode;
+        if(mode) {
+            panel.console("Slow mode enabled.");
+        } else {
+            panel.console("Slow mode disabled.");
+        }
     }
 
     public void closeSocket(){
@@ -70,7 +77,6 @@ public class RDT implements Runnable {
 
     private void rdtReceive() throws IOException, InterruptedException {
 
-        socket.setSoTimeout(0);
         boolean waiting = true;
         int previousSeq = 1;
         int currentSeq;
@@ -82,7 +88,7 @@ public class RDT implements Runnable {
             DatagramPacket packet = new DatagramPacket(data, data.length);
 
             if (slowMode)
-                panel.console("@@@ Waiting for packet.");
+                panel.console("Slow mode is enabled.");
 
             // wait to receive packet
             socket.receive(packet);
@@ -105,14 +111,9 @@ public class RDT implements Runnable {
             // If they aren't the same, we deliver packet and ack back packet SEQ
             // In both conditions an ACK packet is created
             if (currentSeq == previousSeq) {
-                if (slowMode)
-                    panel.console("@@@ Already got this packet, discarding.");
-
                 ackPacket = HttpUtil.createACK(previousSeq);
             } else {
                 ackPacket = HttpUtil.createACK(currentSeq);
-                if (slowMode)
-                    panel.console("@@@ Received correct packet, saving.");
 
                 previousSeq = currentSeq;
                 byte[] packetData = HttpUtil.getData(builtPacket);
@@ -137,10 +138,6 @@ public class RDT implements Runnable {
 
             // send the packet back to server
             socket.send(ack);
-
-            if (slowMode) {
-                panel.console("@@@ ACK sent.");
-            }
         }
 
     }
@@ -211,9 +208,9 @@ public class RDT implements Runnable {
             if(slowMode) {
                 panel.console("# Sending packet #" + packetNumber + " of size " + builtPacket.length + " in 5 seconds");
                 Thread.sleep(5000);
-            } else {
-                panel.console("# Sending packet #" + packetNumber + " of size " + builtPacket.length);
-            }
+            }// else {
+               // panel.console("# Sending packet #" + packetNumber + " of size " + builtPacket.length);
+            //}
 
             // Create a DatagramPacket with data builtPacket
             DatagramPacket packet = new DatagramPacket(builtPacket, builtPacket.length, receiver);
@@ -231,7 +228,7 @@ public class RDT implements Runnable {
                 DatagramPacket getACK = new DatagramPacket(ack, ack.length);
 
                 try {
-                    panel.console("# Waiting for ACK for packet #" + packetNumber + " with seq #" + seq);
+                    //panel.console("# Waiting for ACK for packet #" + packetNumber + " with seq #" + seq);
 
                     // Wait to receive ACK
                     socket.receive(getACK);
@@ -246,28 +243,28 @@ public class RDT implements Runnable {
 
                         // compare sequence numbers to see if correct ACK received
                         if(getSeq != seq) {
-                            panel.console("# Received ACK with seq #" + getSeq + ", wrong seq number.");
+                            //panel.console("# Received ACK with seq #" + getSeq + ", wrong seq number.");
                             continue;
                         } else {
-                            panel.console("# Received ACK with seq #" + getSeq + ", correct seq number.");
+                            //panel.console("# Received ACK with seq #" + getSeq + ", correct seq number.");
                             seq = (seq == 0)? 1 : 0;
                             packetNumber++;
                             waiting = false;
                             break;
                         }
                     } else {
-                        panel.console("# Received a packet that is not an ACK. Throwing it out.");
+                        //panel.console("# Received a packet that is not an ACK. Throwing it out.");
                     }
                 } catch (SocketTimeoutException e) {
                     // Runs when socket times out waiting for an ACK
-                    panel.console("# Timed out waiting for ACK for packet #" + packetNumber + ". Sending again.");
+                    //panel.console("# Timed out waiting for ACK for packet #" + packetNumber + ". Sending again.");
                     continue;
                 }
             }
 
         }
 
-        panel.console("# Done sending.");
+        //panel.console("# Done sending.");
     }
 
 
@@ -293,14 +290,14 @@ public class RDT implements Runnable {
 
         DatagramPacket requestPacket = new DatagramPacket(request, request.length, this.server);
 
-        panel.console("# Sending request to join network.");
+        panel.console("Sending request to join network.");
         socket.send(requestPacket);
 
-        panel.console("# Request sent, sending list to server now.");
+        //panel.console("# Request sent, sending list to server now.");
         Thread.sleep(2000);
         rdtSend(data, server, "POST");
 
-        panel.console("# Waiting to receive list from server");
+        panel.console("Downloading network file list, please wait...");
 
         rdtReceive();
 
@@ -308,11 +305,9 @@ public class RDT implements Runnable {
 
         String[][] allEntries2 = HttpUtil.parseFields(allEntries1);
 
-        panel.console("# Updating my list.");
-
         panel.processEntries(allEntries2);
 
-        panel.console("# Entries updated.");
+        panel.console("Entries downloaded and updated!  You can select a file and download it from a peer now.");
 
         closeSocket();
     }
@@ -353,9 +348,8 @@ public class RDT implements Runnable {
         DatagramPacket call = new DatagramPacket(callData, callData.length);
 
         try {
-            socket.setSoTimeout(0);
 
-            panel.console("@ Server waiting for a request...");
+            panel.console("Waiting for request...");
 
             socket.receive(call);
 
@@ -429,12 +423,10 @@ public class RDT implements Runnable {
                 DatagramPacket responsePacket = new DatagramPacket(header, header.length, peer);
 
                 socket.send(responsePacket);
-                panel.console("# Sent IP to peer.");
+                panel.console("Processed " + packet.getAddress().getHostAddress() + " request for a peer.");
                 break;
             case POST:
                 if(packetInfo[1].equals("join")) {
-                    panel.console("@ Peer requesting to join networking, waiting to receive their list.");
-
 
                     rdtReceive();
 
@@ -444,7 +436,7 @@ public class RDT implements Runnable {
                     database.deletePeer(packet.getAddress().getHostAddress());
                     database.addEntries(entries, packet.getAddress().getHostAddress());
 
-                    panel.console("@ Peer entries added to database.");
+                    panel.console("Peer " + packet.getAddress().getHostAddress() + " has joined the network.");
 
                     String[][] ourEntries = database.getEntries();
 
@@ -459,11 +451,10 @@ public class RDT implements Runnable {
 
                     panel.processEntries(ourEntries);
 
-                    panel.console("# Sent all entries to peer.");
                 }
                 break;
             default:
-                panel.console("@ Received an error out of context, doing nothing.");
+                panel.console("Received an error out of context, doing nothing.");
 
         }
 

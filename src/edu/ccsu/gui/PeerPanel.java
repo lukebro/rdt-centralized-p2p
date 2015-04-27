@@ -25,6 +25,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 	
 	private JRadioButton normal, slow;
 	private boolean slowMode = false;
+    private String shareFolder;
 	
 	private JLabel serverLabel = new JLabel("Directory IP:");
 	public JTextField enterServerIP = new JTextField();
@@ -154,6 +155,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 		}
 		File folder = fileChooser.getSelectedFile();
 		peer.setFolder(folder.getAbsolutePath());
+        shareFolder = folder.getAbsolutePath();
 		console("\"" + folder.getAbsolutePath() + "\" set as Shared Directory.");
 		myFiles = folder.listFiles();
 		for(File file : myFiles){
@@ -237,7 +239,11 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 
 				} else {
 
-					if(slowMode = true) {
+                    File downloads = new File(shareFolder + "/../downloads");
+                    if (!downloads.exists())
+                        downloads.mkdir();
+
+					if(slowMode) {
 						console("Client starting in slow mode...");
 					} else {
 						console("Client starting...");
@@ -250,7 +256,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 					try {
 
 						InetSocketAddress targetAddress = new InetSocketAddress(enterServerIP.getText(), 2010);
-						client = new RDT(3010, PeerPanel.this, peer.getList(),"client", slowMode);
+						client = new RDT(3010, PeerPanel.this, peer.getList(), "client", slowMode);
                         client.server = targetAddress;
 						Thread peerThread = new Thread(client);
 						peerThread.start();

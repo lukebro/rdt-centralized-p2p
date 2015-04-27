@@ -9,7 +9,18 @@ class TCPClient {
 
     public static void main(String[] args) throws Exception {
 
+        byte[] header = HttpUtil.createRequestHeader("GET", "song");
 
+        byte[] data = new String("This is my data HELLO!").getBytes();
+
+        byte[] packet = HttpUtil.buildPacket(header, data);
+
+
+        byte[] split = HttpUtil.getData(packet);
+
+
+        System.out.println(new String(split));
+    /*
         Socket clientSocket = new Socket("127.0.0.1", 4010);
 
         DataOutputStream output = new DataOutputStream(clientSocket.getOutputStream());
@@ -32,6 +43,6 @@ class TCPClient {
 
         clientSocket.close();
 
-
+*/
     }
 }

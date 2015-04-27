@@ -1,5 +1,7 @@
 package edu.ccsu.util;
 
+import java.util.Arrays;
+
 /**
  * Created by Lukasz Brodowski
  */
@@ -172,17 +174,22 @@ public class HttpUtil {
      * @return byte[] data of packet
      */
     public static byte[] getData(byte[] packet) {
-        // Since bytes and characters should have 1 to 1 mapping using String for EASY manipulation
-        String data[] = new String(packet).split("\r\n\r\n");
-        String r = "";
-
         // Start at 1 since 0 is header
-        for(int i = 1; i < data.length; i++) {
-            r += data[i];
-            if(i != data.length-1) r += "\r\n\r\n"; // Just in case actual data has \r\n\r\n in it
+        int start = 0;
+        byte r = (byte)'\r';
+        byte n = (byte)'\n';
+
+        for(int i = 0; i < packet.length-4; i++) {
+            if(packet[i] == r && packet[i+1] == n && packet[i+2] == r && packet[i+3] == n) {
+                start = i+4;
+                break;
+            }
         }
 
-        return r.getBytes();
+
+        byte[] data = Arrays.copyOfRange(packet, start, packet.length);
+
+        return data;
     }
 
 
