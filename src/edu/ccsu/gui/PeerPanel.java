@@ -7,10 +7,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.ConnectException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -229,11 +226,22 @@ public class PeerPanel extends JPanel implements ConsolePanel {
             } else {
 				if (online){
 
+
 					peer.leaveNetwork();
 
+					InetSocketAddress targetAddress = new InetSocketAddress(enterServerIP.getText(), 2010);
+
+                    try {
+                        client = new RDT(3010, PeerPanel.this, peer.getList(), "disconnect", slowMode);
+                    } catch (Exception e1) {}
+
+                    client.server = targetAddress;
+					Thread peerThread = new Thread(client);
+					peerThread.start();
+
 					online = false;
-					networkJoinLeave.setText("Join Network");
-                    enterServerIP.setEditable(true);
+					networkJoinLeave.setText("DISCONNECTED");
+                    networkJoinLeave.setEnabled(false);
 
 				} else {
 
@@ -305,7 +313,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 	private class SyncListener implements ActionListener {
 		public void actionPerformed(ActionEvent e){
 			if (!online)
-				console("Join network before attempting to sync!");
+				console("Join network before attempting to sync");
 			else {
 				try {
 					InetSocketAddress targetAddress = new InetSocketAddress(enterServerIP.getText(), 2010);

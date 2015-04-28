@@ -30,7 +30,7 @@ public class RDT implements Runnable {
      */
     private enum RequestMethods {
         REQUEST, // Request a file
-        POST // Update file list
+        POST // Update file lis
     }
 
     /**
@@ -332,7 +332,7 @@ public class RDT implements Runnable {
         panel.console("Sending request to join network.");
         socket.send(requestPacket);
 
-        //panel.console("# Request sent, sending list to server now.");
+        System.out.println("Request sent, sending list to server now.");
         Thread.sleep(2000);
         rdtSend(data, server, "POST");
 
@@ -347,6 +347,23 @@ public class RDT implements Runnable {
         panel.processEntries(allEntries2);
 
         panel.console("Entries downloaded and updated!  You can select a file and download it from a peer now.");
+
+        closeSocket();
+    }
+
+
+    public void rdtLeave() throws IOException, InterruptedException {
+
+        socket.setSoTimeout(0);
+
+        byte[] request = HttpUtil.createRequestHeader("POST", "leave");
+
+        DatagramPacket requestPacket = new DatagramPacket(request, request.length, this.server);
+
+        panel.console("Sending request to leave network.");
+        socket.send(requestPacket);
+
+        panel.console("You may now close the client, you have successfully disconnected!");
 
         closeSocket();
     }
@@ -494,6 +511,14 @@ public class RDT implements Runnable {
 
                     panel.processEntries(ourEntries);
 
+                } else if(packetInfo[1].equals("leave")) {
+
+                    String peerIP = packet.getAddress().getHostAddress();
+                    database.deletePeer(peerIP);
+
+                    panel.console("Peer \"" + peerIP + "\" has left the network.");
+
+                    panel.processEntries(database.getEntries());
                 }
                 break;
             default:
@@ -505,17 +530,17 @@ public class RDT implements Runnable {
 
     public void run() {
         if(this.mode.equals("client")) {
-            // Client RDT Send and connect;
-            // make sure client.server = InetSocketAddress
             try {
                 this.rdtPost();
             } catch (Exception e) { e.printStackTrace();}
-
         } else if(this.mode.equals("server")){
-
             while (running) {
                     this.waitFromBelow();
             }
+        } else if(this.mode.equals("disconnect")) {
+            try {
+                this.rdtLeave();
+            } catch (Exception e) { e.printStackTrace(); }
         }
     }
 

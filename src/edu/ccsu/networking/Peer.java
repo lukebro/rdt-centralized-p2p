@@ -49,7 +49,7 @@ public class Peer implements Runnable {
                 new Thread(new PeerServer(clientSocket)).start();
 
 
-			} catch (Exception e1) {e1.printStackTrace();}
+			} catch (Exception e1) {}
 		}
 
 	}
@@ -63,9 +63,7 @@ public class Peer implements Runnable {
         setRequester(false);
         try {
             serverSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) {}
 
         pp.console("Disconnected from network.");
 	}
@@ -123,9 +121,6 @@ public class Peer implements Runnable {
             }
         }
 
-        /**
-         * !!!THIS RUN METHOD NEEDS TO SAVE THE FILE INSTEAD OF PRINTING IT OUT!!!
-         */
         public void run() {
 
             byte[] request = HttpUtil.createRequestHeader("GET", this.song);
