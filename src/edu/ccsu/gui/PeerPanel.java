@@ -229,11 +229,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
             } else {
 				if (online){
 
-					try {
-                        peer.leaveNetwork();
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
+					peer.leaveNetwork();
 
 					online = false;
 					networkJoinLeave.setText("Join Network");
@@ -309,7 +305,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 	private class SyncListener implements ActionListener {
 		public void actionPerformed(ActionEvent e){
 			if (!online)
-				console("Join network before attempting to sync");
+				console("Join network before attempting to sync!");
 			else {
 				try {
 					InetSocketAddress targetAddress = new InetSocketAddress(enterServerIP.getText(), 2010);

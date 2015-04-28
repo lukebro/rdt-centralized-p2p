@@ -21,7 +21,9 @@ public class RDT implements Runnable {
     private String mode;
     public boolean running = true;
     public InetSocketAddress server;
-    public int timeout = 0;
+    public int timeout = 1000;
+    private double estimatedRTT = 1000;
+    private double devRTT = 100;
 
     /**
      * Methods of our HTTP protocol
@@ -60,13 +62,16 @@ public class RDT implements Runnable {
         socket.setSoTimeout(0);
     }
 
-    public void doubleTimeout() throws SocketException {
-        this.timeout = this.timeout * 2;
-        socket.setSoTimeout(this.timeout);
-    }
+    public void updateTimeout(double sampleRTT) throws SocketException {
+        // (1 - a) * EstimatedRTT + (a) * SampleRTT
+        this.estimatedRTT = (0.875 * this.estimatedRTT) + (0.125 * sampleRTT);
 
-    public void doubleTimein() throws SocketException {
-        this.timeout = this.timeout / 2;
+        // (1-b * devRTT) + (b * | SampleRTT - EstimatedRTT)
+        this.devRTT = (0.75 * this.devRTT) + (0.25 * Math.abs(sampleRTT - this.estimatedRTT));
+
+        this.timeout = (int)(this.estimatedRTT + 4 * this.devRTT);
+
+        System.out.println("Timeout updated to: " + this.timeout);
         socket.setSoTimeout(this.timeout);
     }
 
@@ -91,6 +96,8 @@ public class RDT implements Runnable {
         boolean waiting = true;
         int previousSeq = 1;
         int currentSeq;
+
+        socket.setSoTimeout(0);
 
         if (slowMode)
             panel.console("Slow mode is enabled.");
@@ -141,6 +148,7 @@ public class RDT implements Runnable {
                 // If dFlag is set to 1 this is last packet
                 if (packetField[1][0].equals("DFLAG") && Integer.parseInt(packetField[1][1]) == 1) {
                     waiting = false;
+                    System.out.println("Done receiving, FLAG is set in packet.");
                 }
             }
 
@@ -148,7 +156,7 @@ public class RDT implements Runnable {
             DatagramPacket ack = new DatagramPacket(ackPacket, ackPacket.length, receiver);
 
             if (slowMode) {
-                panel.console("@@@ Sending ACK back in 5 seconds.");
+                System.out.println("Sending ACK back in 5 seconds.");
                 Thread.sleep(5000);
             }
 
@@ -173,13 +181,14 @@ public class RDT implements Runnable {
         ByteArrayInputStream byteStream = new ByteArrayInputStream(data);
 
         if(slowMode) {
-            this.timeout = 7000;
-
+            this.timeout = 5000;
+            System.out.println("Initial timeout set to: " + this.timeout);
+            updateTimeout(5000);
         } else {
-            this.timeout = 500;
+            updateTimeout(1000);
         }
 
-        socket.setSoTimeout(this.timeout);
+
 
         int packetNumber = 0;
         int seq = 0;
@@ -231,18 +240,21 @@ public class RDT implements Runnable {
             byte[] builtPacket = HttpUtil.buildPacket(packetHeader, packetData);
 
             if(slowMode) {
-                panel.console("# Sending packet #" + packetNumber + " of size " + builtPacket.length + " in 3 seconds.");
-                Thread.sleep(3000);
+                panel.console("Sending packet #" + packetNumber + " of size " + builtPacket.length + " in 5 seconds.");
+                Thread.sleep(5000);
             }
 
             // Create a DatagramPacket with data builtPacket
             DatagramPacket packet = new DatagramPacket(builtPacket, builtPacket.length, receiver);
+
+            long startTime = System.currentTimeMillis();
 
             // While we are waiting for ACK
             while(waiting) {
 
                 // Send packet to client
                 try {
+
                     socket.send(packet);
                 } catch (IOException e) {}
 
@@ -251,15 +263,13 @@ public class RDT implements Runnable {
                 DatagramPacket getACK = new DatagramPacket(ack, ack.length);
 
                 try {
-                    System.out.println("# Waiting for ACK for packet #" + packetNumber + " with seq #" + seq);
+                    System.out.println("Waiting for ACK for packet #" + packetNumber + " with seq #" + seq);
 
                     // Wait to receive ACK
                     socket.receive(getACK);
+                    long endTime   = System.currentTimeMillis();
 
 
-                    if (slowMode) {
-                        System.out.println("Received an ACK processing ACK...");
-                    }
                     // put received packet into receivingPacket byte[]
                     byte[] receivingPacket = Arrays.copyOf(getACK.getData(), getACK.getLength());
 
@@ -269,30 +279,31 @@ public class RDT implements Runnable {
 
                         // compare sequence numbers to see if correct ACK received
                         if (getSeq != seq) {
-                            System.out.println("# Received ACK with seq #" + getSeq + ", wrong seq number.");
-                            doubleTimein();
+                            System.out.println("Received ACK with seq #" + getSeq + ", wrong seq number.");
+
+                            // Update Timeout
+                            updateTimeout((double)(endTime - startTime));
+
                             continue;
                         } else {
-                            System.out.println("# Received ACK with seq #" + getSeq + ", correct seq number.");
+                            System.out.println("Received ACK with seq #" + getSeq + ", correct seq number.");
                             seq = (seq == 0)? 1 : 0;
                             packetNumber++;
                             waiting = false;
                             break;
                         }
                     } else {
-                        System.out.println("# Received a packet that is not an ACK. Throwing it out.");
+                        System.out.println("Received a packet that is not an ACK. Throwing it out.");
                     }
                 } catch (SocketTimeoutException e) {
-                    // Runs when socket times out waiting for an ACK
-                    System.out.println("# Timed out waiting for ACK for packet #" + packetNumber + ". Sending again.");
-                    doubleTimeout();
+                    System.out.println("Timed out waiting for ACK for packet #" + packetNumber + ". Sending again.");
                     continue;
                 }
             }
 
         }
 
-        //panel.console("# Done sending.");
+        System.out.println("Done sending.");
     }
 
     /**

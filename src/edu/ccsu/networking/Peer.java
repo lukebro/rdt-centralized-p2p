@@ -58,11 +58,16 @@ public class Peer implements Runnable {
         this.requester = request;
     }
 	
-	public void leaveNetwork() throws IOException {
-        setRequester(false);
-		serverSocket.close();
+	public void leaveNetwork() {
 
-		pp.console("Disconnected from network.");
+        setRequester(false);
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        pp.console("Disconnected from network.");
 	}
 
 	public void makeRequest (String song) throws IOException, InterruptedException {
