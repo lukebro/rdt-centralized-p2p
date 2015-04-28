@@ -7,7 +7,7 @@ import edu.ccsu.gui.PeerPanel;
 
 import javax.swing.JFrame;
 
-public class PeerFrame {
+public class Peer {
 
 	public static void main(String[] args) {
 

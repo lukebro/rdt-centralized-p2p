@@ -1,7 +1,6 @@
 package edu.ccsu.gui;
 
 import edu.ccsu.networking.RDT;
-import edu.ccsu.networking.RDTServer;
 import edu.ccsu.structures.Entries;
 
 import javax.swing.*;

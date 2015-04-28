@@ -6,14 +6,12 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.io.IOException;
 import java.net.*;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import edu.ccsu.networking.RDT;
-import edu.ccsu.networking.RDTClient;
 import edu.ccsu.networking.Peer;
 
 public class PeerPanel extends JPanel implements ConsolePanel {
