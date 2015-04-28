@@ -25,19 +25,23 @@ public class Peer implements Runnable {
 		this.pp = pp;
         requester = true;
 	}
-	
+
+	//Pass file list
 	public Entries getList(){
 		return fileList;
 	}
 
+	
 	public void run() {
 
         try {
+        	//Create socket to listen for file requests
             this.serverSocket = new ServerSocket(4010);
         } catch(IOException e) {
             e.printStackTrace();
         }
 
+        //Keep listening for file requests
         while(requester) {
 			try {
 
@@ -45,7 +49,7 @@ public class Peer implements Runnable {
 
                 pp.console("Got a request, spawning new thread to let peer download file!");
 
-                // Start new thread and pass socket to peer server = WOOOOOOOOOOOOOHOOOOOO bkz i finally figure it out
+                // Start new thread and pass socket to peer server
                 new Thread(new PeerServer(clientSocket)).start();
 
 
@@ -54,10 +58,12 @@ public class Peer implements Runnable {
 
 	}
 
+	//Set test variable for listening for requests
     public void setRequester(boolean request) {
         this.requester = request;
     }
-	
+
+    //Stop listening for requests and close the socket
 	public void leaveNetwork() {
 
         setRequester(false);
@@ -68,11 +74,14 @@ public class Peer implements Runnable {
         pp.console("Disconnected from network.");
 	}
 
+	//Query the directory server for the IP of a peer that has a file,
+	// when the IP is acquired, request the file from the peer
 	public void makeRequest (String song) throws IOException, InterruptedException {
         byte[] header = HttpUtil.createRequestHeader("REQUEST", song);
 
         pp.console("Asking server who has the file: \"" + song + "\".");
 
+        //Contact directory server
         RDT server = new RDT(3010, pp, this.getList(), "client", false);
         InetSocketAddress serverAddress = new InetSocketAddress(pp.enterServerIP.getText(), 2010);
 
@@ -80,12 +89,16 @@ public class Peer implements Runnable {
 
         pp.console("Asking " + ip + " for the file \"" + song + "\".");
 
+        //New thread to communicate with peer
         new Thread(new PeerClient(ip, song)).start();
 	}
 
+	//set the folder that you offer to share files from
 	public void setFolder(String folder){
 		this.shareFolder = folder;
 	}
+	
+	//Check if a sharing folder has been selected
 	public boolean folderSet(){
 		if (shareFolder.isEmpty())
 			return false;
@@ -93,14 +106,17 @@ public class Peer implements Runnable {
 			return true;
 	}
 
+	//Add a file to the database
 	public void addFile(String name, long size) throws UnknownHostException{
 		fileList.addEntry(name, size);
 	}
 
+	//Throw away the database
 	public void removeFiles(){
 		fileList.destroy();
 	}
 
+	//The thread that will request files from other peers
     private class PeerClient implements Runnable {
 
         private Socket peerSocket;
@@ -121,6 +137,7 @@ public class Peer implements Runnable {
             }
         }
 
+        //Request a file and save the data of the response
         public void run() {
 
             byte[] request = HttpUtil.createRequestHeader("GET", this.song);
@@ -170,6 +187,7 @@ public class Peer implements Runnable {
 
     }
 
+    //Respond to requests for files
 	private class PeerServer implements Runnable {
 
         private Socket peerSocket;

@@ -43,6 +43,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 	
 	private boolean online = false;
 
+	//Create GUI and associated objects
 	public PeerPanel() {
 	
 		peer = new Peer(this);
@@ -50,15 +51,18 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 
 		setLayout(new BorderLayout());
 
+		//File directory button
 		chooseShareFolder = new JButton("Choose Shared Directory");
 		FileListener fileListnr = new FileListener();
 		chooseShareFolder.addActionListener(fileListnr);
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		
+		//Join and Leave Network Button
 		networkJoinLeave = new JButton("Join Network");
 		PeerListener peerListnr = new PeerListener();
 		networkJoinLeave.addActionListener(peerListnr);
 		
+		//Radio buttons to choose network mode
 		normal = new JRadioButton("Normal Mode", true);
 		slow = new JRadioButton("Slow Mode");
 		ButtonGroup mode = new ButtonGroup();
@@ -68,6 +72,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 		normal.addActionListener(modeLstnr);
 		slow.addActionListener(modeLstnr);
 		
+		//Organize all of the above
 		networkGrid = new JPanel();
 		networkGrid.setLayout(new GridLayout(1, 4));
 		networkGrid.setBorder(BorderFactory.createTitledBorder("Network Settings"));
@@ -75,12 +80,10 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 		networkGrid.add(slow);
 		networkGrid.add(serverLabel);
 		networkGrid.add(enterServerIP);
-		
 		connectionGrid = new JPanel();
 		connectionGrid.setLayout(new GridLayout(2, 1));
 		connectionGrid.add(networkGrid);
 		connectionGrid.add(networkJoinLeave);
-		
 		northGrid = new JPanel();
 		northGrid.setLayout(new GridLayout(1,2));
 		northGrid.setBorder(BorderFactory.createTitledBorder("Application Setup"));
@@ -89,6 +92,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 
 		add(northGrid, BorderLayout.NORTH);
 
+		//List of files the directory server is aware of
 		remoteModel.addColumn("Name");
 		remoteModel.addColumn("Size");
 		remoteScroll = new JScrollPane(remoteTable);
@@ -112,6 +116,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 		remoteSouth.add(queryServer);
 		remoteBorder.add(remoteSouth, BorderLayout.SOUTH);
 
+		//List of files to share (local)
 		localModel.addColumn("Name");
 		localModel.addColumn("Size");
 		localScroll = new JScrollPane(localTable);
@@ -137,11 +142,13 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 		
 	}
 	
+	//Display messages to the user
 	public void console(String message){
 		activity.append(message + "\n");
 		activity.selectAll();
 	}
 	
+	//display the name and size of each file in the share folder
 	public void listMyFiles(){
 		peer.removeFiles();
 		int count = localModel.getRowCount();
@@ -163,6 +170,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 		}
 	}
 
+	//Display the file names and sizes reported by the directory server
     public void processEntries(String[][] entries) {
     	int count = remoteModel.getRowCount();
 		if (count > 0){
@@ -177,6 +185,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
     }
 
 
+    //Test the selected network mode
 	private class ModeListener implements ActionListener {
 
 		public void actionPerformed (ActionEvent event)
@@ -195,6 +204,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 		}
 	}
 	
+	//Browse for share folder, list files
 	private class FileListener implements ActionListener {
 
 		public void actionPerformed(ActionEvent e) {
@@ -207,6 +217,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 
 	}
 
+	//Verify proper set up and attempt to join network
 	private class PeerListener implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
 
@@ -274,6 +285,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 	}
 	
 
+	//If in network, try to acquire a file
 	private class SelectionListener implements ActionListener {
 
 		public void actionPerformed(ActionEvent e){
@@ -308,6 +320,7 @@ public class PeerPanel extends JPanel implements ConsolePanel {
 		}
 	}
 	
+	//Resend file list to server
 	private class SyncListener implements ActionListener {
 		public void actionPerformed(ActionEvent e){
 			if (!online)
