@@ -5,6 +5,7 @@ import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 
 import edu.ccsu.gui.PeerPanel;
@@ -162,6 +163,11 @@ public class Peer implements Runnable {
             try {
                 int i = input.read(buffer);
 
+
+                if(i < 2048) {
+                    buffer = Arrays.copyOf(buffer, i);
+                }
+
                 // Get rid of header
                 byte[] header = HttpUtil.getData(buffer);
 
@@ -171,6 +177,8 @@ public class Peer implements Runnable {
                     fileO.write(buffer);
                 }
 
+                input.close();
+                output.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
