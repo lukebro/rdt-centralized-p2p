@@ -2,9 +2,6 @@ package edu.ccsu.util;
 
 import java.util.Arrays;
 
-/**
- * Created by Lukasz Brodowski
- */
 public class HttpUtil {
 
     private HttpUtil(){ }

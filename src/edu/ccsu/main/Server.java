@@ -7,6 +7,12 @@ import java.net.UnknownHostException;
 
 public class Server {
 
+	/**
+	 * Main method for starting the Server window
+	 * @param args
+	 * @throws SocketException
+	 * @throws UnknownHostException
+	 */
 	public static void main (String[] args) throws SocketException, UnknownHostException {
 		
 		JFrame frame = new JFrame ("Napster Server");

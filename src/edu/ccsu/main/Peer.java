@@ -9,6 +9,10 @@ import javax.swing.JFrame;
 
 public class Peer {
 
+	/**
+	 * Main method for starting the Peer window
+	 * @param args
+	 */
 	public static void main(String[] args) {
 
 		JFrame frame = new JFrame ("Napster Client");

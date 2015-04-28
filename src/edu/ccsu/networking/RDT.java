@@ -51,6 +51,15 @@ public class RDT implements Runnable {
         socket.setSoTimeout(0);
     }
 
+    /**
+     * RDT for client
+     * @param sendingPort
+     * @param panel
+     * @param mode
+     * @param slowMode
+     * @throws SocketException
+     * @throws UnknownHostException
+     */
     public RDT(int sendingPort, ConsolePanel panel, String mode, boolean slowMode) throws SocketException, UnknownHostException {
         this.slowMode = slowMode;
         this.ourPort = sendingPort;
@@ -62,6 +71,11 @@ public class RDT implements Runnable {
         socket.setSoTimeout(0);
     }
 
+    /**
+     * Update the Timeout by calculating EstimatedRTT & devRTT
+     * @param sampleRTT
+     * @throws SocketException
+     */
     public void updateTimeout(double sampleRTT) throws SocketException {
         // (1 - a) * EstimatedRTT + (a) * SampleRTT
         this.estimatedRTT = (0.875 * this.estimatedRTT) + (0.125 * sampleRTT);
@@ -75,6 +89,10 @@ public class RDT implements Runnable {
         socket.setSoTimeout(this.timeout);
     }
 
+    /**
+     * Change slowmode on or off
+     * @param mode
+     */
     public void changeSlowMode(boolean mode) {
         this.slowMode = mode;
         if(mode) {
@@ -83,14 +101,21 @@ public class RDT implements Runnable {
             panel.console("Slow mode disabled.");
         }
     }
-    
 
+    /**
+     * Close the socket
+     */
     public void closeSocket(){
         if (socket!=null){
             socket.close();
         }
     }
 
+    /**
+     * Reliably Receive Data by ACKing back SEQ number.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private void rdtReceive() throws IOException, InterruptedException {
 
         boolean waiting = true;
@@ -352,6 +377,11 @@ public class RDT implements Runnable {
     }
 
 
+    /**
+     * Leave the network byt sending a packet with the parameter "leave"
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public void rdtLeave() throws IOException, InterruptedException {
 
         socket.setSoTimeout(0);
@@ -386,6 +416,10 @@ public class RDT implements Runnable {
         }
     }
 
+    /**
+     * Dump all the data from rdtReceive()
+     * @return
+     */
     private String dumpData() {
         String data = new String(this.data);
         this.data = null;
@@ -528,6 +562,12 @@ public class RDT implements Runnable {
 
     }
 
+    /**
+     * Function that thread runs.
+     * If mode is == to client, post clients songs to server
+     * If mode is == to server, start a infinite loop from waitingFromBelow
+     * If mode is == to disconnect, execute the rdtLeave(); function
+     */
     public void run() {
         if(this.mode.equals("client")) {
             try {
@@ -544,6 +584,9 @@ public class RDT implements Runnable {
         }
     }
 
+    /**
+     * Print all rows in the database
+     */
     public void getDatabase() {
         database.printAllEntries();
     }

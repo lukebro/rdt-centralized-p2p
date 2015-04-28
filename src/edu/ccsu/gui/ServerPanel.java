@@ -30,6 +30,11 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 
 	private JTextArea activity;
 
+	/**
+	 * Create the basic GUI, create a new empty database.
+	 * @throws SocketException
+	 * @throws UnknownHostException
+	 */
 	public ServerPanel() throws SocketException, UnknownHostException {
 
 		setLayout (new BorderLayout());
@@ -76,12 +81,20 @@ public class ServerPanel extends JPanel implements ConsolePanel {
         database = new Entries();
 	}
 
+    /**
+     * Print message to console.
+     * @param message
+     */
 	public void console(String message){
 
         activity.append(message + "\n");
         activity.selectAll();
 	}
 
+    /**
+     * Take entries from parameter and display them into the GUI table
+     * @param entries
+     */
     public void processEntries(String[][] entries) {
         model.setNumRows(0);
         for(int i = 0; i < entries.length; i++) {
@@ -89,6 +102,12 @@ public class ServerPanel extends JPanel implements ConsolePanel {
         }
     }
 
+    /**
+     * Read bytes from a file
+     * @param path
+     * @return
+     * @throws IOException
+     */
 	private static byte[] readFromFile(String path) throws IOException {
 
 		File file = new File(path);
@@ -101,6 +120,10 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 		return data;
 	}
 
+    /**
+     * Listen for change of mode in GUI for slow mode
+     * Changes slow mode depending on which radio button is selected
+     */
 	private class ModeListener implements ActionListener {
 
 		public void actionPerformed (ActionEvent event)
@@ -116,8 +139,12 @@ public class ServerPanel extends JPanel implements ConsolePanel {
 				serverRunnable.changeSlowMode(slowMode);
 		}
 	}
-	
 
+
+    /**
+     * Listen for button click
+     * Decides whether or not to close or open the network
+     */
 	private class NetworkListener implements ActionListener {
 		public void actionPerformed (ActionEvent event)
 		{
