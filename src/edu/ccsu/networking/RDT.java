@@ -73,6 +73,8 @@ public class RDT implements Runnable {
 
     /**
      * Update the Timeout by calculating EstimatedRTT & devRTT
+     * Based onf RFC 6298: https://tools.ietf.org/html/rfc6298
+     *
      * @param sampleRTT
      * @throws SocketException
      */
